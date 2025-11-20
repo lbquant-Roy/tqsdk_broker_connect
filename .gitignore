@@ -1,0 +1,48 @@
+# config files with actual credentials - DO NOT COMMIT
+config.yaml
+config-*.yaml
+*.secret
+.env
+
+
+/*.md
+!README.md
+
+# python
+.venv/
+venv/
+env/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# log files
+*.log
+*.log.*
+logs/
+
+# IDE configs
+.vscode/
+.idea/
+*.swp
+*~
+
+.DS_Store
+Thumbs.db
+
+# testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# misc
+*.tmp
+*.bak
+docker-compose.override.yml
