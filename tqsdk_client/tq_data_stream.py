@@ -78,9 +78,6 @@ class TqDataStreamHandler:
                 self.monitored_symbols = set(symbols)
                 logger.info(f"Monitoring {len(symbols)} symbols")
 
-            # Initialize previous state
-            self._initialize_state()
-
             # Start monitoring thread
             self.running = True
             self.monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
@@ -134,6 +131,9 @@ class TqDataStreamHandler:
     def _monitor_loop(self):
         """Main monitoring loop"""
         logger.info("Starting monitoring loop")
+
+        # Initialize state before starting the loop
+        self._initialize_state()
 
         while self.running:
             try:
