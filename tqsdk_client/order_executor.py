@@ -277,12 +277,10 @@ class OrderExecutor:
             True if all orders submitted successfully
         """
         try:
-            # Get position details
-            api.wait_update()
-            positions = api.get_position()
-            pos = positions.get(symbol)
+            # Get position details from cache (thread-safe, no wait_update needed)
+            pos_breakdown = self.stream_handler.get_position_breakdown(symbol)
 
-            if not pos:
+            if not pos_breakdown:
                 logger.warning(f"No position found for {symbol}, submitting as CLOSE")
                 return self._submit_single_order(
                     api, symbol, direction, "CLOSE", volume, limit_price, base_order_id
@@ -290,11 +288,11 @@ class OrderExecutor:
 
             # Determine which side to close
             if direction == "SELL":  # Closing long position
-                today_qty = pos.pos_long_today
-                his_qty = pos.pos_long_his
+                today_qty = pos_breakdown['pos_long_today']
+                his_qty = pos_breakdown['pos_long_his']
             else:  # direction == "BUY", closing short position
-                today_qty = pos.pos_short_today
-                his_qty = pos.pos_short_his
+                today_qty = pos_breakdown['pos_short_today']
+                his_qty = pos_breakdown['pos_short_his']
 
             logger.info(f"Position breakdown for {symbol}: today={today_qty}, historical={his_qty}")
 

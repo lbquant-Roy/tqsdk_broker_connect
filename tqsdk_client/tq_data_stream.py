@@ -39,6 +39,10 @@ class TqDataStreamHandler:
         self.previous_orders: Dict[str, Dict[str, Any]] = {}
         self.monitored_symbols: Set[str] = set()
 
+        # Cache detailed position breakdown for thread-safe access
+        self.position_details: Dict[str, Dict[str, int]] = {}
+        self.position_lock = threading.Lock()
+
         # Cancel request queue for thread-safe order cancellation
         self.cancel_queue: queue.Queue = queue.Queue()
 
@@ -216,6 +220,15 @@ class TqDataStreamHandler:
                 net_pos = pos.pos_long - pos.pos_short
                 current_positions[symbol] = net_pos
 
+                # Cache detailed position breakdown for thread-safe access
+                with self.position_lock:
+                    self.position_details[symbol] = {
+                        'pos_long_today': pos.pos_long_today,
+                        'pos_long_his': pos.pos_long_his,
+                        'pos_short_today': pos.pos_short_today,
+                        'pos_short_his': pos.pos_short_his
+                    }
+
                 # Check if position changed
                 prev_pos = self.previous_positions.get(symbol, 0)
                 if net_pos != prev_pos:
@@ -348,3 +361,28 @@ class TqDataStreamHandler:
         except queue.Full:
             logger.error(f"Cancel queue is full, cannot queue order: {order_id}")
             return False
+
+    def get_position_breakdown(self, symbol: str) -> Optional[Dict[str, int]]:
+        """
+        Get cached position breakdown for a symbol (thread-safe)
+
+        This returns the detailed position breakdown cached from the monitoring
+        loop, avoiding the need to call api.wait_update() from other threads.
+
+        Parameters
+        ----------
+        symbol : str
+            Trading symbol
+
+        Returns
+        -------
+        dict or None
+            Position breakdown with keys:
+            - pos_long_today: Today's long position
+            - pos_long_his: Historical long position
+            - pos_short_today: Today's short position
+            - pos_short_his: Historical short position
+            Returns None if symbol not in cache
+        """
+        with self.position_lock:
+            return self.position_details.get(symbol)
