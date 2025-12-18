@@ -6,12 +6,18 @@ ALIYUN_HOST="139.196.123.105"
 ALIYUN_USER="root"
 ALIYUN_PORT=22
 
+# Aliyun ACR Configuration
+ACR_REGISTRY="acr-sh-1-registry.cn-shanghai.cr.aliyuncs.com"
+ACR_NAMESPACE="qpto"
+ACR_IMAGE_NAME="tqsdk_broker_connect"
+
 # Docker Image Configuration
-# For multi-container architecture, each service has its own image
-# Use build_all_images.sh to build all services
+# Unified image for all 8 services (command override in docker-compose)
 IMAGE_TAG="v0.2.0"
-SAVE_DIR="/home/lbquant-roy"
-REMOTE_DIR="/root"
 
 # Build Configuration
 BUILD_CONTEXT="../.."
+
+# Deprecated (no longer used with unified image)
+# SAVE_DIR="/home/lbquant-roy"
+# REMOTE_DIR="/root"
