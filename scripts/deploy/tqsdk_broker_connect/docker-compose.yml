@@ -1,0 +1,82 @@
+version: "3.8"
+
+services:
+  # TqApi Services (each has its own TqApi instance)
+  tq_order_submitter:
+    image: tq_order_submitter:v0.2.0
+    container_name: tq_order_submitter
+    restart: unless-stopped
+    volumes:
+      - ${CONFIG_PATH:-./config.yaml}:/workspace/tqsdk_broker_connect/config.yaml:ro
+      - ${LOG_PATH:-./logs}/order_submitter:/workspace/tqsdk_broker_connect/logs
+    network_mode: "host"
+
+  tq_order_canceller:
+    image: tq_order_canceller:v0.2.0
+    container_name: tq_order_canceller
+    restart: unless-stopped
+    volumes:
+      - ${CONFIG_PATH:-./config.yaml}:/workspace/tqsdk_broker_connect/config.yaml:ro
+      - ${LOG_PATH:-./logs}/order_canceller:/workspace/tqsdk_broker_connect/logs
+    network_mode: "host"
+
+  tq_order_monitor:
+    image: tq_order_monitor:v0.2.0
+    container_name: tq_order_monitor
+    restart: unless-stopped
+    volumes:
+      - ${CONFIG_PATH:-./config.yaml}:/workspace/tqsdk_broker_connect/config.yaml:ro
+      - ${LOG_PATH:-./logs}/order_monitor:/workspace/tqsdk_broker_connect/logs
+    network_mode: "host"
+
+  tq_position_monitor:
+    image: tq_position_monitor:v0.2.0
+    container_name: tq_position_monitor
+    restart: unless-stopped
+    volumes:
+      - ${CONFIG_PATH:-./config.yaml}:/workspace/tqsdk_broker_connect/config.yaml:ro
+      - ${LOG_PATH:-./logs}/position_monitor:/workspace/tqsdk_broker_connect/logs
+    network_mode: "host"
+
+  tq_account_monitor:
+    image: tq_account_monitor:v0.2.0
+    container_name: tq_account_monitor
+    restart: unless-stopped
+    volumes:
+      - ${CONFIG_PATH:-./config.yaml}:/workspace/tqsdk_broker_connect/config.yaml:ro
+      - ${LOG_PATH:-./logs}/account_monitor:/workspace/tqsdk_broker_connect/logs
+    network_mode: "host"
+
+  # Handler Services (no TqApi, pure data handlers)
+  tq_order_handler:
+    image: tq_order_handler:v0.2.0
+    container_name: tq_order_handler
+    restart: unless-stopped
+    volumes:
+      - ${CONFIG_PATH:-./config.yaml}:/workspace/tqsdk_broker_connect/config.yaml:ro
+      - ${LOG_PATH:-./logs}/order_handler:/workspace/tqsdk_broker_connect/logs
+    network_mode: "host"
+    depends_on:
+      - tq_order_monitor
+
+  tq_position_handler:
+    image: tq_position_handler:v0.2.0
+    container_name: tq_position_handler
+    restart: unless-stopped
+    volumes:
+      - ${CONFIG_PATH:-./config.yaml}:/workspace/tqsdk_broker_connect/config.yaml:ro
+      - ${LOG_PATH:-./logs}/position_handler:/workspace/tqsdk_broker_connect/logs
+    network_mode: "host"
+    depends_on:
+      - tq_position_monitor
+
+  tq_account_handler:
+    image: tq_account_handler:v0.2.0
+    container_name: tq_account_handler
+    restart: unless-stopped
+    volumes:
+      - ${CONFIG_PATH:-./config.yaml}:/workspace/tqsdk_broker_connect/config.yaml:ro
+      - ${LOG_PATH:-./logs}/account_handler:/workspace/tqsdk_broker_connect/logs
+    network_mode: "host"
+    depends_on:
+      - tq_account_monitor

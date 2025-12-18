@@ -14,11 +14,8 @@ COPY --from=myapp pyproject.toml uv.lock README.md /workspace/tqsdk_broker_conne
 # Install dependencies (cached if pyproject.toml/uv.lock unchanged)
 RUN uv sync --frozen
 
-# Copy source code (changes frequently, separate layer)
-COPY --from=myapp ./tqsdk_client ./tqsdk_client
-COPY --from=myapp ./main.py ./main.py
+# Copy shared module
+COPY --from=myapp ./shared ./shared
 
 ENV http_proxy=""
 ENV https_proxy=""
-
-ENTRYPOINT ["/workspace/tqsdk_broker_connect/.venv/bin/python", "/workspace/tqsdk_broker_connect/main.py"]
