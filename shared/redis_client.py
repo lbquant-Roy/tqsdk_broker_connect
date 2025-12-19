@@ -9,12 +9,11 @@ from loguru import logger
 from .config import Config
 from .constants import (
     REDIS_POSITION_KEY_PATTERN,
-    REDIS_POSITION_BREAKDOWN_KEY_PATTERN,
     REDIS_ACCOUNT_KEY_PATTERN,
     POSITION_TTL,
-    POSITION_BREAKDOWN_TTL,
     ACCOUNT_TTL
 )
+from .models import FullPosition
 
 
 class RedisClient:
@@ -41,48 +40,36 @@ class RedisClient:
             logger.error(f"Failed to connect to Redis: {e}")
             raise
 
-    # Position operations
-    def set_position(self, portfolio_id: str, symbol: str, value: float, ttl: int = POSITION_TTL):
-        """Set position value in Redis"""
+    # Full position operations
+    def set_full_position(self, portfolio_id: str, symbol: str, position: FullPosition,
+                          ttl: int = POSITION_TTL):
+        """Set full position dict in Redis with TTL"""
         key = REDIS_POSITION_KEY_PATTERN.format(portfolio_id=portfolio_id, symbol=symbol)
         try:
-            self.client.setex(key, ttl, value)
-            logger.debug(f"Position set: {key} = {value}")
+            self.client.setex(key, ttl, position.to_json())
+            logger.debug(f"Full position set: {key} pos={position.pos}")
         except Exception as e:
-            logger.error(f"Failed to set position: {e}")
+            logger.error(f"Failed to set full position: {e}")
             raise
 
-    def get_position(self, portfolio_id: str, symbol: str) -> Optional[float]:
-        """Get position value from Redis"""
+    def get_full_position(self, portfolio_id: str, symbol: str) -> Optional[FullPosition]:
+        """Get full position dict from Redis"""
         key = REDIS_POSITION_KEY_PATTERN.format(portfolio_id=portfolio_id, symbol=symbol)
         try:
             value = self.client.get(key)
-            return float(value) if value else None
+            return FullPosition.from_json(value) if value else None
         except Exception as e:
-            logger.error(f"Failed to get position: {e}")
+            logger.error(f"Failed to get full position: {e}")
             return None
 
-    # Position breakdown operations (for CLOSETODAY handling)
-    def set_position_breakdown(self, portfolio_id: str, symbol: str, breakdown: Dict[str, Any],
-                               ttl: int = POSITION_BREAKDOWN_TTL):
-        """Set position breakdown in Redis"""
-        key = REDIS_POSITION_BREAKDOWN_KEY_PATTERN.format(portfolio_id=portfolio_id, symbol=symbol)
+    def refresh_position_ttl(self, portfolio_id: str, symbol: str, ttl: int = POSITION_TTL) -> bool:
+        """Refresh TTL for existing position key"""
+        key = REDIS_POSITION_KEY_PATTERN.format(portfolio_id=portfolio_id, symbol=symbol)
         try:
-            self.client.setex(key, ttl, json.dumps(breakdown))
-            logger.debug(f"Position breakdown set: {key}")
+            return bool(self.client.expire(key, ttl))
         except Exception as e:
-            logger.error(f"Failed to set position breakdown: {e}")
-            raise
-
-    def get_position_breakdown(self, portfolio_id: str, symbol: str) -> Optional[Dict[str, Any]]:
-        """Get position breakdown from Redis"""
-        key = REDIS_POSITION_BREAKDOWN_KEY_PATTERN.format(portfolio_id=portfolio_id, symbol=symbol)
-        try:
-            value = self.client.get(key)
-            return json.loads(value) if value else None
-        except Exception as e:
-            logger.error(f"Failed to get position breakdown: {e}")
-            return None
+            logger.error(f"Failed to refresh position TTL: {e}")
+            return False
 
     # Account operations
     def set_account(self, portfolio_id: str, account_data: Dict[str, Any], ttl: int = ACCOUNT_TTL):

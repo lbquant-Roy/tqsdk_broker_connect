@@ -3,7 +3,7 @@ version: "3.7"
 # Unified image configuration
 # All services use the same image but with different command overrides
 x-common-image: &common-image
-  image: ${REGISTRY:-}tqsdk_broker_connect:${VERSION:-v0.2.0}
+  image: ${REGISTRY:-}tqsdk_broker_connect:${VERSION:-v0.2.1}
   restart: unless-stopped
   network_mode: "host"
 
@@ -14,7 +14,7 @@ services:
     container_name: tq_order_submitter
     command: ["/workspaces/tqsdk_broker_connect/services/tq_order_submitter/main.py"]
     volumes:
-      - ${CONFIG_PATH:-./config.yaml}:/workspaces/tqsdk_broker_connect/config.yaml:ro
+      - ${CONFIG_DIR:-.}:/workspace/tqsdk_broker_connect:ro
       - ${LOG_PATH:-./logs}/order_submitter:/workspaces/tqsdk_broker_connect/logs
 
   tq_order_canceller:
@@ -22,7 +22,7 @@ services:
     container_name: tq_order_canceller
     command: ["/workspaces/tqsdk_broker_connect/services/tq_order_canceller/main.py"]
     volumes:
-      - ${CONFIG_PATH:-./config.yaml}:/workspaces/tqsdk_broker_connect/config.yaml:ro
+      - ${CONFIG_DIR:-.}:/workspace/tqsdk_broker_connect:ro
       - ${LOG_PATH:-./logs}/order_canceller:/workspaces/tqsdk_broker_connect/logs
 
   tq_order_monitor:
@@ -30,23 +30,31 @@ services:
     container_name: tq_order_monitor
     command: ["/workspaces/tqsdk_broker_connect/services/tq_order_monitor/main.py"]
     volumes:
-      - ${CONFIG_PATH:-./config.yaml}:/workspaces/tqsdk_broker_connect/config.yaml:ro
+      - ${CONFIG_DIR:-.}:/workspace/tqsdk_broker_connect:ro
       - ${LOG_PATH:-./logs}/order_monitor:/workspaces/tqsdk_broker_connect/logs
 
-  tq_position_monitor:
+  tq_position_update_monitor:
     <<: *common-image
-    container_name: tq_position_monitor
-    command: ["/workspaces/tqsdk_broker_connect/services/tq_position_monitor/main.py"]
+    container_name: tq_position_update_monitor
+    command: ["/workspaces/tqsdk_broker_connect/services/tq_position_update_monitor/main.py"]
     volumes:
-      - ${CONFIG_PATH:-./config.yaml}:/workspaces/tqsdk_broker_connect/config.yaml:ro
-      - ${LOG_PATH:-./logs}/position_monitor:/workspaces/tqsdk_broker_connect/logs
+      - ${CONFIG_DIR:-.}:/workspace/tqsdk_broker_connect:ro
+      - ${LOG_PATH:-./logs}/position_update_monitor:/workspaces/tqsdk_broker_connect/logs
+
+  tq_position_loop_monitor:
+    <<: *common-image
+    container_name: tq_position_loop_monitor
+    command: ["/workspaces/tqsdk_broker_connect/services/tq_position_loop_monitor/main.py"]
+    volumes:
+      - ${CONFIG_DIR:-.}:/workspace/tqsdk_broker_connect:ro
+      - ${LOG_PATH:-./logs}/position_loop_monitor:/workspaces/tqsdk_broker_connect/logs
 
   tq_account_monitor:
     <<: *common-image
     container_name: tq_account_monitor
     command: ["/workspaces/tqsdk_broker_connect/services/tq_account_monitor/main.py"]
     volumes:
-      - ${CONFIG_PATH:-./config.yaml}:/workspaces/tqsdk_broker_connect/config.yaml:ro
+      - ${CONFIG_DIR:-.}:/workspace/tqsdk_broker_connect:ro
       - ${LOG_PATH:-./logs}/account_monitor:/workspaces/tqsdk_broker_connect/logs
 
   # Handler Services (no TqApi, pure data handlers)
@@ -55,27 +63,17 @@ services:
     container_name: tq_order_handler
     command: ["/workspaces/tqsdk_broker_connect/services/tq_order_handler/main.py"]
     volumes:
-      - ${CONFIG_PATH:-./config.yaml}:/workspaces/tqsdk_broker_connect/config.yaml:ro
+      - ${CONFIG_DIR:-.}:/workspace/tqsdk_broker_connect:ro
       - ${LOG_PATH:-./logs}/order_handler:/workspaces/tqsdk_broker_connect/logs
     depends_on:
       - tq_order_monitor
-
-  tq_position_handler:
-    <<: *common-image
-    container_name: tq_position_handler
-    command: ["/workspaces/tqsdk_broker_connect/services/tq_position_handler/main.py"]
-    volumes:
-      - ${CONFIG_PATH:-./config.yaml}:/workspaces/tqsdk_broker_connect/config.yaml:ro
-      - ${LOG_PATH:-./logs}/position_handler:/workspaces/tqsdk_broker_connect/logs
-    depends_on:
-      - tq_position_monitor
 
   tq_account_handler:
     <<: *common-image
     container_name: tq_account_handler
     command: ["/workspaces/tqsdk_broker_connect/services/tq_account_handler/main.py"]
     volumes:
-      - ${CONFIG_PATH:-./config.yaml}:/workspaces/tqsdk_broker_connect/config.yaml:ro
+      - ${CONFIG_DIR:-.}:/workspace/tqsdk_broker_connect:ro
       - ${LOG_PATH:-./logs}/account_handler:/workspaces/tqsdk_broker_connect/logs
     depends_on:
       - tq_account_monitor

@@ -52,13 +52,15 @@ class OrderCancelRequest:
 
 
 @dataclass
-class PositionBreakdown:
-    """Position breakdown for CLOSETODAY handling"""
+class FullPosition:
+    """Full position data for Redis storage with all TqSDK position fields"""
+    pos_long: int = 0
+    pos_short: int = 0
+    pos: int = 0  # net position = pos_long - pos_short
     pos_long_today: int = 0
     pos_long_his: int = 0
     pos_short_today: int = 0
     pos_short_his: int = 0
-    updated_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -67,18 +69,50 @@ class PositionBreakdown:
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'PositionBreakdown':
+    def from_dict(cls, data: Dict[str, Any]) -> 'FullPosition':
         return cls(
-            pos_long_today=data.get('pos_long_today', 0),
-            pos_long_his=data.get('pos_long_his', 0),
-            pos_short_today=data.get('pos_short_today', 0),
-            pos_short_his=data.get('pos_short_his', 0),
-            updated_at=data.get('updated_at', datetime.utcnow().isoformat())
+            pos_long=int(data.get('pos_long', 0)),
+            pos_short=int(data.get('pos_short', 0)),
+            pos=int(data.get('pos', 0)),
+            pos_long_today=int(data.get('pos_long_today', 0)),
+            pos_long_his=int(data.get('pos_long_his', 0)),
+            pos_short_today=int(data.get('pos_short_today', 0)),
+            pos_short_his=int(data.get('pos_short_his', 0))
         )
 
     @classmethod
-    def from_json(cls, json_str: str) -> 'PositionBreakdown':
+    def from_json(cls, json_str: str) -> 'FullPosition':
         return cls.from_dict(json.loads(json_str))
+
+    @classmethod
+    def from_tqsdk_position(cls, pos) -> 'FullPosition':
+        """Create from TqSDK position object"""
+        return cls(
+            pos_long=int(pos.pos_long),
+            pos_short=int(pos.pos_short),
+            pos=int(pos.pos_long - pos.pos_short),
+            pos_long_today=int(pos.pos_long_today),
+            pos_long_his=int(pos.pos_long_his),
+            pos_short_today=int(pos.pos_short_today),
+            pos_short_his=int(pos.pos_short_his)
+        )
+
+    @classmethod
+    def zero(cls) -> 'FullPosition':
+        """Create zero position"""
+        return cls()
+
+    def equals(self, other: 'FullPosition') -> bool:
+        """Compare positions for equality (all fields)"""
+        if other is None:
+            return False
+        return (self.pos_long == other.pos_long and
+                self.pos_short == other.pos_short and
+                self.pos == other.pos and
+                self.pos_long_today == other.pos_long_today and
+                self.pos_long_his == other.pos_long_his and
+                self.pos_short_today == other.pos_short_today and
+                self.pos_short_his == other.pos_short_his)
 
 
 @dataclass
@@ -88,8 +122,7 @@ class PositionUpdate:
     timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     portfolio_id: str = ""
     symbol: str = ""
-    net_position: float = 0
-    breakdown: Optional[PositionBreakdown] = None
+    position: Optional[FullPosition] = None
 
     def to_dict(self) -> Dict[str, Any]:
         result = {
@@ -97,10 +130,9 @@ class PositionUpdate:
             'timestamp': self.timestamp,
             'portfolio_id': self.portfolio_id,
             'symbol': self.symbol,
-            'net_position': self.net_position,
         }
-        if self.breakdown:
-            result['breakdown'] = self.breakdown.to_dict()
+        if self.position:
+            result['position'] = self.position.to_dict()
         return result
 
     def to_json(self) -> str:
@@ -108,16 +140,15 @@ class PositionUpdate:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'PositionUpdate':
-        breakdown = None
-        if 'breakdown' in data and data['breakdown']:
-            breakdown = PositionBreakdown.from_dict(data['breakdown'])
+        position = None
+        if 'position' in data and data['position']:
+            position = FullPosition.from_dict(data['position'])
         return cls(
             type=data.get('type', 'POSITION_UPDATE'),
             timestamp=data.get('timestamp', datetime.utcnow().isoformat()),
             portfolio_id=data.get('portfolio_id', ''),
             symbol=data.get('symbol', ''),
-            net_position=data.get('net_position', 0),
-            breakdown=breakdown
+            position=position
         )
 
 

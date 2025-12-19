@@ -34,10 +34,10 @@ def split_close_order(
     if offset != 'CLOSE' or not requires_closetoday(symbol):
         return [order_request]
 
-    # Get position breakdown from Redis
-    breakdown = redis_client.get_position_breakdown(portfolio_id, symbol)
-    if not breakdown:
-        logger.warning(f"No position breakdown found for {symbol}, using original CLOSE")
+    # Get full position from Redis
+    position = redis_client.get_full_position(portfolio_id, symbol)
+    if not position:
+        logger.warning(f"No position found for {symbol}, using original CLOSE")
         return [order_request]
 
     direction = order_request.get('direction', '')
@@ -46,11 +46,11 @@ def split_close_order(
 
     # Determine which positions to close based on direction
     if direction == 'SELL':  # Closing long positions
-        today_qty = breakdown.get('pos_long_today', 0)
-        his_qty = breakdown.get('pos_long_his', 0)
+        today_qty = position.pos_long_today
+        his_qty = position.pos_long_his
     else:  # BUY - Closing short positions
-        today_qty = breakdown.get('pos_short_today', 0)
-        his_qty = breakdown.get('pos_short_his', 0)
+        today_qty = position.pos_short_today
+        his_qty = position.pos_short_his
 
     orders = []
     remaining = volume

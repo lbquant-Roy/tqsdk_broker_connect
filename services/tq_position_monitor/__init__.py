@@ -1,1 +1,0 @@
-"""TQ Position Monitor Service"""
