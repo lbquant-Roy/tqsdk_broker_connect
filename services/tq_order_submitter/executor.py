@@ -21,6 +21,8 @@ def execute_order(api: TqApi, order_request: Dict[str, Any]) -> bool:
         order_id = order_request.get('order_id')
 
         logger.info(f"Executing order: {symbol} {direction} {offset} {volume} @ {limit_price or 'MARKET'}")
+        
+        api.wait_update()
 
         if limit_price:
             order = api.insert_order(
@@ -39,13 +41,31 @@ def execute_order(api: TqApi, order_request: Dict[str, Any]) -> bool:
                 volume=volume,
                 order_id=order_id
             )
-
-        # Send the order to the server (insert_order only queues it)
-        # wait_update() flushes queued messages and processes responses
+            
         api.wait_update()
+        # # Keep waiting for the order to leave ALIVE so we know the exchange response
+        # while True:
+        #     api.wait_update()
 
-        logger.info(f"Order submitted: {order.order_id} status={order.status}")
-        return True
+        #     if api.is_changing(order, ["status", "last_msg", "volume_left"]):
+        #         filled = order.volume_orign - order.volume_left
+        #         logger.info(
+        #             f"Order update: {order.order_id} status={order.status} "
+        #             f"filled={filled} last_msg={order.last_msg}"
+        #         )
+
+        #     if order.status != "ALIVE":
+        #         break
+
+        # if order.status != "FINISHED":
+        #     logger.error(
+        #         f"Order failed: {order.order_id} status={order.status} "
+        #         f"last_msg={order.last_msg or 'unknown'}"
+        #     )
+        #     return False
+
+        # logger.info(f"Order completed: {order.order_id} status={order.status}")
+        # return True
 
     except Exception as e:
         logger.error(f"Failed to execute order: {e}")

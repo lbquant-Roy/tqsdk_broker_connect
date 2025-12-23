@@ -75,8 +75,11 @@ class OrderSubmitterService:
             # Execute all orders
             success = True
             for order in orders:
+                self.api.wait_update()
                 if not execute_order(self.api, order):
                     success = False
+                self.api.wait_update()
+                
 
             return success
 
