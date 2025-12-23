@@ -47,10 +47,17 @@ def submit_message(portfolio_id: str, order_id: str) -> Dict[str, Any]:
     }
 
 
-def cancel_message(portfolio_id: str, order_id: str) -> Dict[str, Any]:
+def cancel_message(
+    portfolio_id: str,
+    order_id: str,
+    cancel_type: str = "order_id",
+    contract_code: str = "",
+) -> Dict[str, Any]:
     return {
         "action": "CANCEL",
+        "type": cancel_type,
         "order_id": order_id,
+        "contract_code": contract_code,
         "portfolio_id": portfolio_id,
     }
 
@@ -115,6 +122,13 @@ def build_parser() -> argparse.ArgumentParser:
         default="submit",
         help="Message type to publish.",
     )
+    parser.add_argument(
+        "--cancel-type",
+        choices=("order_id", "contract_code"),
+        default="order_id",
+        help="Cancel message type to publish.",
+    )
+    parser.add_argument("--contract-code", default=None, help="Contract code override.")
     parser.add_argument("--order-id", default=None, help="Order ID override.")
     parser.add_argument("--portfolio-id", default=None, help="Portfolio ID override.")
     return parser
@@ -125,6 +139,7 @@ def main() -> None:
     config = get_config()
     portfolio_id = args.portfolio_id or config.portfolio_id
     order_id = args.order_id or f"mock-{uuid.uuid4().hex[:12]}"
+    contract_code = args.contract_code or "SHFE.rb2605"
     routing_key = f"PortfolioId_{portfolio_id}"
 
     external = RabbitMQPublisher(config=config, exchange=EXTERNAL_ORDER_EXCHANGE, exchange_type="topic")
@@ -148,7 +163,12 @@ def main() -> None:
                 external,
                 EXTERNAL_ORDER_CANCEL_QUEUE,
                 routing_key,
-                cancel_message(portfolio_id, order_id),
+                cancel_message(
+                    portfolio_id,
+                    order_id,
+                    cancel_type=args.cancel_type,
+                    contract_code=contract_code,
+                ),
             )
             logger.info(f"Published cancel for order_id={order_id}")
 
