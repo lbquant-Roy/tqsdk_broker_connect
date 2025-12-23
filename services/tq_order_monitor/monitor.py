@@ -58,7 +58,7 @@ class OrderMonitor:
                     'status': order.status,
                     'event_type': event_type,
                     'filled_quantity': order.volume_orign - order.volume_left,
-                    'symbol': order.symbol,
+                    'symbol': order.instrument_id,
                     'direction': order.direction,
                     'offset': order.offset,
                     'volume_orign': order.volume_orign,
