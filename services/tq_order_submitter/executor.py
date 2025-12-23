@@ -28,19 +28,21 @@ def execute_order(api: TqApi, order_request: Dict[str, Any]) -> bool:
                 direction=direction,
                 offset=offset,
                 volume=volume,
-                limit_price=limit_price
+                limit_price=limit_price,
+                order_id=order_id
             )
         else:
             order = api.insert_order(
                 symbol=symbol,
                 direction=direction,
                 offset=offset,
-                volume=volume
+                volume=volume,
+                order_id=order_id
             )
 
-        # Wait for order to be acknowledged
-        while order.status == "":
-            api.wait_update()
+        # Send the order to the server (insert_order only queues it)
+        # wait_update() flushes queued messages and processes responses
+        api.wait_update()
 
         logger.info(f"Order submitted: {order.order_id} status={order.status}")
         return True
