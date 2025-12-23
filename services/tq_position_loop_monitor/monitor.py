@@ -49,17 +49,19 @@ class PositionLoopMonitor:
 
     def _reconciliation_cycle(self):
         """Single reconciliation cycle"""
-        # Update TqApi state
-        self.api.wait_update(deadline=0)
-
-        # Get current positions from TqApi
-        tq_positions = self.api.get_position()
 
         # Get universe symbols (main + next contracts)
         universe_symbols = self.universe_loader.load_universe()
 
         # Track which symbols we've processed
         processed_symbols = set()
+
+
+        # Update TqApi state
+        self.api.wait_update()
+
+        # Get current positions from TqApi
+        tq_positions = self.api.get_position()
 
         # Process all TqApi positions
         for symbol, pos in tq_positions.items():
@@ -71,6 +73,8 @@ class PositionLoopMonitor:
         for symbol in universe_symbols:
             if symbol not in processed_symbols:
                 self._ensure_position_exists(symbol)
+
+        self.api.wait_update()
 
     def _reconcile_position(self, symbol: str, tq_position: FullPosition):
         """Reconcile a single position with Redis"""
