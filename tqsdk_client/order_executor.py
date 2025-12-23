@@ -170,8 +170,14 @@ class OrderExecutor:
             action = order_request.get('action', 'SUBMIT')
 
             if action == 'CANCEL':
-                # Handle cancel request
-                success = self.cancel_order(order_request.get('order_id'))
+                cancel_type = order_request.get('type', 'order_id')
+                if cancel_type == 'contract_code':
+                    success = self.cancel_orders_by_contract(order_request.get('contract_code', ''))
+                elif cancel_type == 'order_id':
+                    success = self.cancel_order(order_request.get('order_id'))
+                else:
+                    logger.error(f"Unknown cancel type: {cancel_type}")
+                    success = False
             else:
                 # Handle normal order submission
                 success = self._execute_order(order_request)
@@ -408,6 +414,61 @@ class OrderExecutor:
 
         except Exception as e:
             logger.error(f"Failed to queue cancel order {order_id}: {e}")
+            return False
+
+    def cancel_orders_by_contract(self, contract_code: str) -> bool:
+        """
+        Queue cancellation requests for all alive orders of a contract.
+
+        Parameters
+        ----------
+        contract_code : str
+            Contract code to cancel (EXCHANGE.symbol)
+
+        Returns
+        -------
+        bool
+            True if all cancel requests were queued successfully
+        """
+        if not contract_code:
+            logger.error("Missing contract_code in cancel request")
+            return False
+
+        try:
+            api = self.stream_handler.get_api()
+            if not api:
+                logger.error("TqApi not available")
+                return False
+
+            def normalize_instrument_id(code: str) -> str:
+                if not code:
+                    return ""
+                return code.split(".", 1)[-1]
+
+            orders = api.get_order()
+            alive_orders = [
+                order for order in orders.values()
+                if order.status == "ALIVE"
+                and normalize_instrument_id(getattr(order, "instrument_id", "")) == normalize_instrument_id(contract_code)
+            ]
+
+            if not alive_orders:
+                logger.warning(f"No alive orders found for contract: {contract_code}")
+                return True
+
+            all_queued = True
+            for order in alive_orders:
+                if not self.stream_handler.queue_cancel_order(order.order_id):
+                    all_queued = False
+
+            if all_queued:
+                logger.info(f"Queued {len(alive_orders)} cancel requests for contract: {contract_code}")
+            else:
+                logger.error(f"Failed to queue some cancel requests for contract: {contract_code}")
+            return all_queued
+
+        except Exception as e:
+            logger.error(f"Failed to queue cancel orders for contract {contract_code}: {e}")
             return False
 
     def stop(self):

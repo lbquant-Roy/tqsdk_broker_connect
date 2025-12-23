@@ -37,8 +37,10 @@ class OrderSubmitRequest:
 @dataclass
 class OrderCancelRequest:
     """External order cancel request from qpto_engine"""
-    order_id: str
-    portfolio_id: str
+    order_id: str = ""
+    cancel_type: str = "order_id"
+    contract_code: str = ""
+    portfolio_id: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -46,7 +48,9 @@ class OrderCancelRequest:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'OrderCancelRequest':
         return cls(
-            order_id=data['order_id'],
+            order_id=data.get('order_id', ''),
+            cancel_type=data.get('type', 'order_id'),
+            contract_code=data.get('contract_code', ''),
             portfolio_id=data.get('portfolio_id', '')
         )
 

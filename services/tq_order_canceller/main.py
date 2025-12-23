@@ -17,7 +17,7 @@ from shared.tqapi_factory import create_tqapi, close_tqapi
 from shared.rabbitmq_client import RabbitMQConsumer
 from shared.constants import EXTERNAL_ORDER_CANCEL_QUEUE, EXTERNAL_ORDER_EXCHANGE
 
-from executor import cancel_order
+from executor import cancel_order, cancel_orders_by_contract
 
 
 class OrderCancellerService:
@@ -58,14 +58,25 @@ class OrderCancellerService:
             if message.get('action') != 'CANCEL':
                 logger.debug("Skipping non-CANCEL request")
                 return True
+            cancel_type = message.get('type', 'order_id')
+            if cancel_type == 'contract_code':
+                contract_code = message.get('contract_code')
+                if not contract_code:
+                    logger.error("Missing contract_code in cancel request")
+                    return False
+                logger.info(f"Processing contract cancel: {contract_code}")
+                return cancel_orders_by_contract(self.api, contract_code)
 
-            order_id = message.get('order_id')
-            if not order_id:
-                logger.error("Missing order_id in cancel request")
-                return False
+            if cancel_type == 'order_id':
+                order_id = message.get('order_id')
+                if not order_id:
+                    logger.error("Missing order_id in cancel request")
+                    return False
+                logger.info(f"Processing cancel: {order_id}")
+                return cancel_order(self.api, order_id)
 
-            logger.info(f"Processing cancel: {order_id}")
-            return cancel_order(self.api, order_id)
+            logger.error(f"Unknown cancel type: {cancel_type}")
+            return False
 
         except Exception as e:
             logger.error(f"Error processing cancel: {e}")
