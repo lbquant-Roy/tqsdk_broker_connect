@@ -40,7 +40,6 @@ class PositionLoopMonitor:
 
                 current_time = time.time()
                 ts_gap = current_time - self.last_success_ts
-
                 if ts_gap >= self.loop_interval:
                     logger.info(f"Start Reconciliation Cycle (elapsed={ts_gap:.1f}s)")
                     self._reconciliation_cycle()
@@ -63,8 +62,6 @@ class PositionLoopMonitor:
 
         # Get universe symbols (main + next contracts)
         universe_symbols = self.universe_loader.load_universe()
-
-        # Track which symbols we've processed
         processed_symbols = set()
 
         # Get current positions from TqApi
@@ -94,10 +91,8 @@ class PositionLoopMonitor:
             self.redis.refresh_position_ttl(self.portfolio_id, symbol)
             logger.info(f"Position TTL refreshed: {symbol}")
         else:
-            # Mismatch - log warning, update with TqApi value (source of truth)
-            logger.warning(f"Position mismatch for {symbol}: "
-                           f"TqApi={tq_position.pos}, Redis={redis_position.pos}")
-            self.redis.set_full_position(self.portfolio_id, symbol, tq_position)
+            # Mismatch - log warning
+            logger.warning(f"Position mismatch for {symbol}: TqApi={tq_position.pos}, Redis={redis_position.pos}")
 
     def _ensure_position_exists(self, symbol: str):
         """Ensure a universe symbol has a position entry (zero if not held)"""
