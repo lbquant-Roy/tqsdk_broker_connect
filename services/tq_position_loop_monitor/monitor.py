@@ -35,8 +35,12 @@ class PositionLoopMonitor:
 
         while self.running:
             try:
+                logger.info(f"Start Reconciliation Cycle")
                 self._reconciliation_cycle()
+                logger.info(f"Finish Reconciliation Cycle")
+                logger.info(f"Start Wait and Sleep")
                 time.sleep(self.loop_interval)
+                logger.info(f"Finish Wait and Sleep")
             except Exception as e:
                 if self.running:
                     logger.error(f"Error in loop monitor: {e}")
@@ -74,8 +78,6 @@ class PositionLoopMonitor:
             if symbol not in processed_symbols:
                 self._ensure_position_exists(symbol)
 
-        self.api.wait_update()
-
     def _reconcile_position(self, symbol: str, tq_position: FullPosition):
         """Reconcile a single position with Redis"""
         redis_position = self.redis.get_full_position(self.portfolio_id, symbol)
@@ -87,7 +89,7 @@ class PositionLoopMonitor:
         elif tq_position.equals(redis_position):
             # Same - just refresh TTL
             self.redis.refresh_position_ttl(self.portfolio_id, symbol)
-            logger.debug(f"Position TTL refreshed: {symbol}")
+            logger.info(f"Position TTL refreshed: {symbol}")
         else:
             # Mismatch - log warning, update with TqApi value (source of truth)
             logger.warning(f"Position mismatch for {symbol}: "
@@ -101,7 +103,7 @@ class PositionLoopMonitor:
         if redis_position is None:
             # Initialize with zero position
             self.redis.set_full_position(self.portfolio_id, symbol, FullPosition.zero())
-            logger.debug(f"Initialized zero position for universe symbol: {symbol}")
+            logger.info(f"Initialized zero position for universe symbol: {symbol}")
         else:
             # Exists - just refresh TTL
             self.redis.refresh_position_ttl(self.portfolio_id, symbol)
