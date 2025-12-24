@@ -17,8 +17,9 @@ def create_tqapi(config: Config) -> TqApi:
 
     logger.info(f"Creating TqApi instance for portfolio {config.portfolio_id}")
     api = TqApi(account=account, auth=auth)
-    logger.info("TqApi instance created successfully")
+    _ = api.get_quote("KQ.m@SHFE.au")
 
+    logger.info("TqApi instance created successfully")
     return api
 
 
