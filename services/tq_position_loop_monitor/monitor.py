@@ -27,6 +27,7 @@ class PositionLoopMonitor:
         self.universe_loader = universe_loader
         self.running = False
         self.loop_interval = POSITION_LOOP_INTERVAL_SECONDS
+        self.last_success_ts = 0
 
     def start(self):
         """Start the reconciliation loop"""
@@ -35,11 +36,18 @@ class PositionLoopMonitor:
 
         while self.running:
             try:
-                logger.info(f"Start Reconciliation Cycle")
-                self._reconciliation_cycle()
-                logger.info(f"Finish Reconciliation Cycle")
-                logger.info(f"Start Wait and Sleep")
-                logger.info(f"Finish Wait and Sleep")
+                self.api.wait_update()
+
+                current_time = time.time()
+                ts_gap = current_time - self.last_success_ts
+
+                if ts_gap >= self.loop_interval:
+                    logger.info(f"Start Reconciliation Cycle (elapsed={ts_gap:.1f}s)")
+                    self._reconciliation_cycle()
+                    self.last_success_ts = current_time
+                    logger.info(f"Finish Reconciliation Cycle")
+                else:
+                    logger.debug(f"Skip cycle (only {ts_gap:.1f}s elapsed, need {self.loop_interval}s)")
             except Exception as e:
                 if self.running:
                     logger.error(f"Error in loop monitor: {e}")
@@ -58,10 +66,6 @@ class PositionLoopMonitor:
 
         # Track which symbols we've processed
         processed_symbols = set()
-
-
-        # Update TqApi state
-        self.api.wait_update()
 
         # Get current positions from TqApi
         tq_positions = self.api.get_position()
