@@ -39,7 +39,6 @@ class PositionLoopMonitor:
                 self._reconciliation_cycle()
                 logger.info(f"Finish Reconciliation Cycle")
                 logger.info(f"Start Wait and Sleep")
-                time.sleep(self.loop_interval)
                 logger.info(f"Finish Wait and Sleep")
             except Exception as e:
                 if self.running:
