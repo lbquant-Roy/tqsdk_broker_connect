@@ -27,6 +27,7 @@ class PositionLoopMonitor:
         self.universe_loader = universe_loader
         self.running = False
         self.loop_interval = POSITION_LOOP_INTERVAL_SECONDS
+        self.last_success_ts = 0
 
     def start(self):
         """Start the reconciliation loop"""
@@ -35,8 +36,17 @@ class PositionLoopMonitor:
 
         while self.running:
             try:
-                self._reconciliation_cycle()
-                time.sleep(self.loop_interval)
+                self.api.wait_update()
+
+                current_time = time.time()
+                ts_gap = current_time - self.last_success_ts
+                if ts_gap >= self.loop_interval:
+                    logger.info(f"Start Reconciliation Cycle (elapsed={ts_gap:.1f}s)")
+                    self._reconciliation_cycle()
+                    self.last_success_ts = current_time
+                    logger.info(f"Finish Reconciliation Cycle")
+                else:
+                    logger.debug(f"Skip cycle (only {ts_gap:.1f}s elapsed, need {self.loop_interval}s)")
             except Exception as e:
                 if self.running:
                     logger.error(f"Error in loop monitor: {e}")
@@ -49,17 +59,13 @@ class PositionLoopMonitor:
 
     def _reconciliation_cycle(self):
         """Single reconciliation cycle"""
-        # Update TqApi state
-        self.api.wait_update(deadline=0)
-
-        # Get current positions from TqApi
-        tq_positions = self.api.get_position()
 
         # Get universe symbols (main + next contracts)
         universe_symbols = self.universe_loader.load_universe()
-
-        # Track which symbols we've processed
         processed_symbols = set()
+
+        # Get current positions from TqApi
+        tq_positions = self.api.get_position()
 
         # Process all TqApi positions
         for symbol, pos in tq_positions.items():
@@ -83,12 +89,10 @@ class PositionLoopMonitor:
         elif tq_position.equals(redis_position):
             # Same - just refresh TTL
             self.redis.refresh_position_ttl(self.portfolio_id, symbol)
-            logger.debug(f"Position TTL refreshed: {symbol}")
+            logger.info(f"Position TTL refreshed: {symbol}")
         else:
-            # Mismatch - log warning, update with TqApi value (source of truth)
-            logger.warning(f"Position mismatch for {symbol}: "
-                           f"TqApi={tq_position.pos}, Redis={redis_position.pos}")
-            self.redis.set_full_position(self.portfolio_id, symbol, tq_position)
+            # Mismatch - log warning
+            logger.warning(f"Position mismatch for {symbol}: TqApi={tq_position.pos}, Redis={redis_position.pos}")
 
     def _ensure_position_exists(self, symbol: str):
         """Ensure a universe symbol has a position entry (zero if not held)"""
@@ -97,7 +101,7 @@ class PositionLoopMonitor:
         if redis_position is None:
             # Initialize with zero position
             self.redis.set_full_position(self.portfolio_id, symbol, FullPosition.zero())
-            logger.debug(f"Initialized zero position for universe symbol: {symbol}")
+            logger.info(f"Initialized zero position for universe symbol: {symbol}")
         else:
             # Exists - just refresh TTL
             self.redis.refresh_position_ttl(self.portfolio_id, symbol)
