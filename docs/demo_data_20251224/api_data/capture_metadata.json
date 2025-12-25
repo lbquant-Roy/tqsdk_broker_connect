@@ -1,0 +1,20 @@
+{
+  "capture_timestamp": "2025-12-24T07:48:10.721504",
+  "tq_username": "13554506590",
+  "portfolio_id": "1234567890",
+  "run_mode": "sandbox",
+  "symbols": [
+    "SHFE.rb2505",
+    "DCE.m2505",
+    "SHFE.au2505"
+  ],
+  "kline_durations": [
+    60,
+    300,
+    3600,
+    86400
+  ],
+  "kline_data_length": 100,
+  "update_iterations": 30,
+  "script_version": "1.0.0"
+}

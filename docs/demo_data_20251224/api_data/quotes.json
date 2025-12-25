@@ -1,0 +1,308 @@
+{
+  "SHFE.rb2505": {
+    "amount": 17479800,
+    "ask_price1": 3075,
+    "ask_price2": 3100,
+    "ask_price3": 3105,
+    "ask_price4": 3110,
+    "ask_price5": 3116,
+    "ask_volume1": 30,
+    "ask_volume2": 30,
+    "ask_volume3": 30,
+    "ask_volume4": 30,
+    "ask_volume5": 30,
+    "average": 3067,
+    "bid_price1": 3051,
+    "bid_price2": 3050,
+    "bid_price3": 3047,
+    "bid_price4": 3040,
+    "bid_price5": 3020,
+    "bid_volume1": 30,
+    "bid_volume2": 90,
+    "bid_volume3": 30,
+    "bid_volume4": 60,
+    "bid_volume5": 30,
+    "cash_dividend_ratio": [],
+    "categories": [
+      {
+        "id": "FERROUS",
+        "name": "黑色金属"
+      }
+    ],
+    "close": 3075,
+    "commission": 3.042,
+    "datetime": "2025-05-15 14:59:59.000001",
+    "delivery_month": 5,
+    "delivery_year": 2025,
+    "exchange_id": "SHFE",
+    "exercise_month": 0,
+    "exercise_type": "",
+    "exercise_year": 0,
+    "expire_datetime": 1747292400.0,
+    "expire_rest_days": -223,
+    "expired": true,
+    "highest": 3116,
+    "ins_class": "FUTURE",
+    "instrument_id": "SHFE.rb2505",
+    "instrument_name": "螺纹2505",
+    "iopv": NaN,
+    "last_exercise_datetime": NaN,
+    "last_price": 3075,
+    "lower_limit": 2889,
+    "lowest": 3048,
+    "margin": 2433.6,
+    "max_limit_order_volume": 500,
+    "max_market_order_volume": 0,
+    "min_limit_order_volume": 1,
+    "min_market_order_volume": 0,
+    "open": 3060,
+    "open_interest": 5730,
+    "open_max_limit_order_volume": 500,
+    "open_max_market_order_volume": 0,
+    "open_min_limit_order_volume": 1,
+    "open_min_market_order_volume": 0,
+    "option_class": "",
+    "position_limit": 900,
+    "pre_close": 3060,
+    "pre_open_interest": 5880,
+    "pre_settlement": 3042,
+    "price_decs": 0,
+    "price_tick": 1.0,
+    "product_id": "rb",
+    "public_float_share_quantity": 0,
+    "settlement": 3066,
+    "stock_dividend_ratio": [],
+    "strike_price": NaN,
+    "trading_time": {
+      "day": [
+        [
+          "09:00:00",
+          "10:15:00"
+        ],
+        [
+          "10:30:00",
+          "11:30:00"
+        ],
+        [
+          "13:30:00",
+          "15:00:00"
+        ]
+      ],
+      "night": [
+        [
+          "21:00:00",
+          "23:00:00"
+        ]
+      ]
+    },
+    "underlying_quote": null,
+    "underlying_symbol": "",
+    "upper_limit": 3194,
+    "volume": 570,
+    "volume_multiple": 10.0
+  },
+  "DCE.m2505": {
+    "amount": 55641700,
+    "ask_price1": 2745,
+    "ask_price2": NaN,
+    "ask_price3": NaN,
+    "ask_price4": NaN,
+    "ask_price5": NaN,
+    "ask_volume1": 17,
+    "ask_volume2": 0,
+    "ask_volume3": 0,
+    "ask_volume4": 0,
+    "ask_volume5": 0,
+    "average": 2708,
+    "bid_price1": 2700,
+    "bid_price2": NaN,
+    "bid_price3": NaN,
+    "bid_price4": NaN,
+    "bid_price5": NaN,
+    "bid_volume1": 423,
+    "bid_volume2": 0,
+    "bid_volume3": 0,
+    "bid_volume4": 0,
+    "bid_volume5": 0,
+    "cash_dividend_ratio": [],
+    "categories": [
+      {
+        "id": "GREASE",
+        "name": "油脂油料"
+      }
+    ],
+    "close": 2700,
+    "commission": 1.5,
+    "datetime": "2025-05-19 14:59:59.999501",
+    "delivery_month": 5,
+    "delivery_year": 2025,
+    "exchange_id": "DCE",
+    "exercise_month": 0,
+    "exercise_type": "",
+    "exercise_year": 0,
+    "expire_datetime": 1747638000.0,
+    "expire_rest_days": -219,
+    "expired": true,
+    "highest": 2740,
+    "ins_class": "FUTURE",
+    "instrument_id": "DCE.m2505",
+    "instrument_name": "豆粕2505",
+    "iopv": NaN,
+    "last_exercise_datetime": NaN,
+    "last_price": 2700,
+    "lower_limit": 2587,
+    "lowest": 2700,
+    "margin": 1376.0,
+    "max_limit_order_volume": 1000,
+    "max_market_order_volume": 1000,
+    "min_limit_order_volume": 1,
+    "min_market_order_volume": 1,
+    "open": 2731,
+    "open_interest": 0,
+    "open_max_limit_order_volume": 1000,
+    "open_max_market_order_volume": 1000,
+    "open_min_limit_order_volume": 1,
+    "open_min_market_order_volume": 1,
+    "option_class": "",
+    "position_limit": 0,
+    "pre_close": 2740,
+    "pre_open_interest": 15024,
+    "pre_settlement": 2752,
+    "price_decs": 0,
+    "price_tick": 1.0,
+    "product_id": "m",
+    "public_float_share_quantity": 0,
+    "settlement": 2766,
+    "stock_dividend_ratio": [],
+    "strike_price": NaN,
+    "trading_time": {
+      "day": [
+        [
+          "09:00:00",
+          "10:15:00"
+        ],
+        [
+          "10:30:00",
+          "11:30:00"
+        ],
+        [
+          "13:30:00",
+          "15:00:00"
+        ]
+      ],
+      "night": [
+        [
+          "21:00:00",
+          "23:00:00"
+        ]
+      ]
+    },
+    "underlying_quote": null,
+    "underlying_symbol": "",
+    "upper_limit": 2917,
+    "volume": 2054,
+    "volume_multiple": 10.0
+  },
+  "SHFE.au2505": {
+    "amount": 0.0,
+    "ask_price1": NaN,
+    "ask_price2": NaN,
+    "ask_price3": NaN,
+    "ask_price4": NaN,
+    "ask_price5": NaN,
+    "ask_volume1": 0,
+    "ask_volume2": 0,
+    "ask_volume3": 0,
+    "ask_volume4": 0,
+    "ask_volume5": 0,
+    "average": NaN,
+    "bid_price1": NaN,
+    "bid_price2": NaN,
+    "bid_price3": NaN,
+    "bid_price4": NaN,
+    "bid_price5": NaN,
+    "bid_volume1": 0,
+    "bid_volume2": 0,
+    "bid_volume3": 0,
+    "bid_volume4": 0,
+    "bid_volume5": 0,
+    "cash_dividend_ratio": [],
+    "categories": [
+      {
+        "id": "PRECIOUS_METALS",
+        "name": "贵金属"
+      }
+    ],
+    "close": 762.0,
+    "commission": 10.0,
+    "datetime": "2025-05-15 14:59:59.999500",
+    "delivery_month": 5,
+    "delivery_year": 2025,
+    "exchange_id": "SHFE",
+    "exercise_month": 0,
+    "exercise_type": "",
+    "exercise_year": 0,
+    "expire_datetime": 1747292400.0,
+    "expire_rest_days": -223,
+    "expired": true,
+    "highest": NaN,
+    "ins_class": "FUTURE",
+    "instrument_id": "SHFE.au2505",
+    "instrument_name": "沪金2505",
+    "iopv": NaN,
+    "last_exercise_datetime": NaN,
+    "last_price": 762.0,
+    "lower_limit": 670.56,
+    "lowest": NaN,
+    "margin": 38100.0,
+    "max_limit_order_volume": 500,
+    "max_market_order_volume": 0,
+    "min_limit_order_volume": 1,
+    "min_market_order_volume": 0,
+    "open": NaN,
+    "open_interest": 288,
+    "open_max_limit_order_volume": 500,
+    "open_max_market_order_volume": 0,
+    "open_min_limit_order_volume": 1,
+    "open_min_market_order_volume": 0,
+    "option_class": "",
+    "position_limit": 900,
+    "pre_close": 762.0,
+    "pre_open_interest": 288,
+    "pre_settlement": 762.0,
+    "price_decs": 2,
+    "price_tick": 0.02,
+    "product_id": "au",
+    "public_float_share_quantity": 0,
+    "settlement": 762.0,
+    "stock_dividend_ratio": [],
+    "strike_price": NaN,
+    "trading_time": {
+      "day": [
+        [
+          "09:00:00",
+          "10:15:00"
+        ],
+        [
+          "10:30:00",
+          "11:30:00"
+        ],
+        [
+          "13:30:00",
+          "15:00:00"
+        ]
+      ],
+      "night": [
+        [
+          "21:00:00",
+          "26:30:00"
+        ]
+      ]
+    },
+    "underlying_quote": null,
+    "underlying_symbol": "",
+    "upper_limit": 853.44,
+    "volume": 0,
+    "volume_multiple": 1000.0
+  }
+}
