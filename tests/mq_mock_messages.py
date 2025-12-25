@@ -41,7 +41,7 @@ def submit_message(portfolio_id: str, order_id: str) -> Dict[str, Any]:
         "direction": "BUY",
         "offset": "OPEN",
         "volume": 1,
-        "limit_price": 3100.0,
+        "limit_price": 3121.0,
         "order_id": order_id,
         "portfolio_id": portfolio_id,
     }
