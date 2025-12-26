@@ -37,11 +37,11 @@ def declare_and_bind(publisher: RabbitMQPublisher, queue: str, exchange: str, ro
 def submit_message(portfolio_id: str, order_id: str) -> Dict[str, Any]:
     return {
         "action": "SUBMIT",
-        "symbol": "SHFE.rb2601",
-        "direction": "BUY",
+        "symbol": "SHFE.pb2611",
+        "direction": "SELL",
         "offset": "OPEN",
-        "volume": 1,
-        "limit_price": 3121.0,
+        "volume": 2,
+        "limit_price": 17355,
         "order_id": order_id,
         "portfolio_id": portfolio_id,
     }
