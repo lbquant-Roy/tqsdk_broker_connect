@@ -32,13 +32,26 @@ class OrderPostgresWriter:
         try:
             order = OrderHistoryFuturesChn.from_dict(order_data)
 
+            # Check if order exists
+            exists_sql = text("SELECT 1 FROM order_history_futures_chn WHERE order_id = :order_id")
+            exists = session.execute(exists_sql, {'order_id': order.order_id}).fetchone()
+
+            if not exists:
+                logger.warning(f"Order {order.order_id} does not exist in database, cannot update")
+                return False
+
             # Update only fields that can change during order lifecycle
+            # Also update TqSDK fields that might be populated later
             update_sql = text("""
                 UPDATE order_history_futures_chn
                 SET
                     exchange_order_id = :exchange_order_id,
                     exchange_id = :exchange_id,
                     volume_left = :volume_left,
+                    price_type = :price_type,
+                    volume_condition = :volume_condition,
+                    time_condition = :time_condition,
+                    insert_date_time = :insert_date_time,
                     last_msg = :last_msg,
                     status = :status,
                     is_dead = :is_dead,
@@ -55,6 +68,10 @@ class OrderPostgresWriter:
                 'exchange_order_id': order.exchange_order_id,
                 'exchange_id': order.exchange_id,
                 'volume_left': order.volume_left,
+                'price_type': order.price_type,
+                'volume_condition': order.volume_condition,
+                'time_condition': order.time_condition,
+                'insert_date_time': order.insert_date_time,
                 'last_msg': order.last_msg,
                 'status': order.status,
                 'is_dead': order.is_dead,
@@ -74,7 +91,7 @@ class OrderPostgresWriter:
 
         except Exception as e:
             session.rollback()
-            logger.error(f"Failed to write order update: {e}")
+            logger.error(f"Failed to write order update: {e}", exc_info=True)
             return False
         finally:
             session.close()
