@@ -24,6 +24,9 @@ REDIS_ACCOUNT_KEY_PATTERN = "TQ_Account_PortfolioId_{portfolio_id}"
 POSITION_TTL = 15    # 15 seconds (short TTL for real-time tracking)
 ACCOUNT_TTL = 3600   # 1 hour
 
+# Order expiration
+ORDER_EXPIRE_ALLOW_MAX = 5  # Maximum allowed age for order in seconds
+
 # Position monitor intervals
 POSITION_LOOP_INTERVAL_SECONDS = 5    # Loop monitor check interval
 UNIVERSE_REFRESH_INTERVAL_SECONDS = 1800  # 30 minutes for universe refresh

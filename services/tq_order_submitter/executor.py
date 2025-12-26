@@ -1,9 +1,14 @@
 """
 TqApi order execution logic
 """
+import time
 from typing import Dict, Any, Optional
 from loguru import logger
 from tqsdk import TqApi
+
+import sys
+sys.path.insert(0, '/workspaces/tqsdk_broker_connect')
+from shared.constants import ORDER_EXPIRE_ALLOW_MAX
 
 
 def execute_order(api: TqApi, order_request: Dict[str, Any]) -> bool:
@@ -20,8 +25,27 @@ def execute_order(api: TqApi, order_request: Dict[str, Any]) -> bool:
         limit_price = order_request.get('limit_price')
         order_id = order_request.get('order_id')
 
+        # Check order expiration
+        order_timestamp = order_request.get('timestamp', None)
+        if order_timestamp:
+            current_time_ns = time.time_ns()
+            age_seconds = (current_time_ns - order_timestamp) / 1e9
+
+            if age_seconds > ORDER_EXPIRE_ALLOW_MAX:
+                logger.warning(
+                    f"Order expired: {order_id} age={age_seconds:.3f}s "
+                    f"exceeds max={ORDER_EXPIRE_ALLOW_MAX}s, rejecting order"
+                )
+                return False
+
+            logger.debug(f"Order age check passed: {order_id} age={age_seconds:.3f}s")
+        else:
+            # if not has vaild timestamp, this order should also failed.
+            logger.warning(f"Order rejected: {order_id} missing timestamp field")
+            return False
+
         logger.info(f"Executing order: {symbol} {direction} {offset} {volume} @ {limit_price or 'MARKET'}")
-        
+
         api.wait_update()
 
         if limit_price:
