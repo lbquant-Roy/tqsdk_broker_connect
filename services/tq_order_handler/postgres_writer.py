@@ -26,10 +26,12 @@ class OrderPostgresWriter:
         self.Session = sessionmaker(bind=self.engine)
         logger.info("PostgreSQL connection established")
 
-    def write_order_update(self, order_data: OrderHistoryFuturesChn) -> bool:
+    def write_order_update(self, order_data: Dict[str, Any]) -> bool:
         """Write order update to database (only updates mutable fields)"""
         session = self.Session()
         try:
+            order = OrderHistoryFuturesChn.from_dict(order_data)
+
             # Update only fields that can change during order lifecycle
             update_sql = text("""
                 UPDATE order_history_futures_chn
@@ -49,25 +51,25 @@ class OrderPostgresWriter:
             """)
 
             session.execute(update_sql, {
-                'order_id': order_data.order_id,
-                'exchange_order_id': order_data.exchange_order_id,
-                'exchange_id': order_data.exchange_id,
-                'volume_left': order_data.volume_left,
-                'last_msg': order_data.last_msg,
-                'status': order_data.status,
-                'is_dead': order_data.is_dead,
-                'is_online': order_data.is_online,
-                'is_error': order_data.is_error,
-                'trade_price': order_data.trade_price,
-                'exchange_trading_date': order_data.exchange_trading_date
+                'order_id': order.order_id,
+                'exchange_order_id': order.exchange_order_id,
+                'exchange_id': order.exchange_id,
+                'volume_left': order.volume_left,
+                'last_msg': order.last_msg,
+                'status': order.status,
+                'is_dead': order.is_dead,
+                'is_online': order.is_online,
+                'is_error': order.is_error,
+                'trade_price': order.trade_price,
+                'exchange_trading_date': order.exchange_trading_date
             })
 
             # Process trade_records if present
-            if order_data.trade_records:
-                self._write_trade_records(session, order_data.order_id, order_data.trade_records, order_data.qpto_portfolio_id)
+            if order.trade_records:
+                self._write_trade_records(session, order.order_id, order.trade_records, order.qpto_portfolio_id)
 
             session.commit()
-            logger.debug(f"Order update written: {order_data.order_id} status={order_data.status}")
+            logger.debug(f"Order update written: {order.order_id} status={order.status}")
             return True
 
         except Exception as e:
