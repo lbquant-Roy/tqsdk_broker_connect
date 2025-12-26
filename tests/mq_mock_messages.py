@@ -126,7 +126,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--cancel-type",
-        choices=("order_id", "contract_code"),
+        choices=("order_id", "contract_code", "all"),
         default="order_id",
         help="Cancel message type to publish.",
     )
