@@ -2,7 +2,7 @@
 TqApi order execution logic
 """
 import time
-from datetime import datetime
+import pandas as pd
 from typing import Dict, Any
 from loguru import logger
 from tqsdk import TqApi
@@ -27,25 +27,14 @@ def is_in_trading_session(order_id):
     Returns:
         bool: True if valid trading time, False otherwise
     """
-    try:
-        import pytz
-        tz = pytz.timezone("Asia/Shanghai")
-        now = datetime.now(tz)
-    except ImportError:
-        from datetime import timezone, timedelta
-        tz = timezone(timedelta(hours=8))
-        now = datetime.now(tz)
+    now = pd.Timestamp.now(tz='Asia/Shanghai')
+    current_time = now.time()
 
-    hour = now.hour
-    minute = now.minute
-    second = now.second
-    time_in_seconds = hour * 3600 + minute * 60 + second
-
-    # Trading sessions in seconds from midnight (start, end)
+    # Trading sessions (start_time, end_time)
     sessions = [
-        (9 * 3600, 10 * 3600 + 15 * 60),
-        (10 * 3600 + 30 * 60, 11 * 3600 + 30 * 60),
-        (13 * 3600 + 30 * 60, 15 * 3600)
+        (pd.Timestamp('09:00:00').time(), pd.Timestamp('10:15:00').time()),
+        (pd.Timestamp('10:30:00').time(), pd.Timestamp('11:30:00').time()),
+        (pd.Timestamp('13:30:00').time(), pd.Timestamp('15:00:00').time())
     ]
 
     # Check if in any trading session
@@ -53,7 +42,7 @@ def is_in_trading_session(order_id):
     current_session_end = None
 
     for session_start, session_end in sessions:
-        if session_start <= time_in_seconds <= session_end:
+        if session_start <= current_time <= session_end:
             in_session = True
             current_session_end = session_end
             break
@@ -63,11 +52,13 @@ def is_in_trading_session(order_id):
         return False
 
     # Check if within last 15 seconds of session
-    time_to_session_end = current_session_end - time_in_seconds
+    session_end_timestamp = pd.Timestamp.combine(now.date(), current_session_end).tz_localize('Asia/Shanghai')
+    time_to_session_end = (session_end_timestamp - now).total_seconds()
+
     if time_to_session_end <= SESSION_END_BUFFER_SECONDS:
         logger.warning(
             f"Order rejected: {order_id} - Too close to session end "
-            f"({time_to_session_end}s remaining)"
+            f"({time_to_session_end:.0f}s remaining)"
         )
         return False
 
