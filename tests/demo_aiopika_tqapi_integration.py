@@ -102,7 +102,7 @@ class AioPikaTqApiDemo:
                 - 10:30:00 - 11:30:00
                 - 13:30:00 - 15:00:00
                 """
-                now_ts = pd.Timestamp.now(tz="UTC+8")
+                now_ts = pd.Timestamp.now(tz="Asia/Shanghai")
                 hour = now_ts.hour
                 minute = now_ts.minute
                 time_in_minutes = hour * 60 + minute
@@ -129,7 +129,7 @@ class AioPikaTqApiDemo:
                     else:
                         logger.info(f"Block not in trading time, skip")
 
-                if block_counter_max > 3:
+                if block_counter > block_counter_max:
                     raise Exception("Too many Block, Close and Restart!")
 
                 # Check for queued orders (non-blocking)
