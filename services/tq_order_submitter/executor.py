@@ -62,6 +62,7 @@ def check_order_age(order_request):
 def execute_order(api: TqApi, db_writer, config, order_request: Dict[str, Any]) -> bool:
     """Execute order via TqApi after validation checks and DB insert."""
     try:
+        # check first
         if not check_order_age(order_request):
             return False
 
@@ -75,10 +76,10 @@ def execute_order(api: TqApi, db_writer, config, order_request: Dict[str, Any]) 
         limit_price = order_request.get('limit_price', 0.0)
         order_id = order_request.get('order_id')
         portfolio_id = order_request.get('portfolio_id', config.portfolio_id)
-        timestamp = order_request.get('timestamp', 0)
+        timestamp = order_request['timestamp']
 
-        price_str = f"{limit_price}" if limit_price else "MARKET"
-        logger.info(f"Submitting order: {symbol} {direction} {offset} {volume} @ {price_str}")
+        _print_price_str = f"{limit_price}" if limit_price else "MARKET"
+        logger.info(f"Submitting order: {symbol} {direction} {offset} {volume} @ {_print_price_str}")
 
         # Prepare order data for DB insertion
         from shared.models import OrderHistoryFuturesChn
@@ -100,6 +101,8 @@ def execute_order(api: TqApi, db_writer, config, order_request: Dict[str, Any]) 
         if not db_writer.insert_order(order_data):
             logger.error(f"DB insert failed for order {order_id}, aborting submission")
             return False
+        else:
+            logger.info(f"DB insert success for order {order_id}")
 
         # before send, check again
         if not check_order_age(order_request):
