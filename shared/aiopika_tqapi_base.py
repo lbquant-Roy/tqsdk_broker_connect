@@ -90,6 +90,7 @@ class AioPikaTqApiService(ABC):
             block_counter = 0
 
             while self.worker_running.is_set():
+                logger.info("TqSDK main wait_update start!")
                 block_res = self.api.wait_update(deadline=time.time() + self.block_timeout)
 
                 if not block_res:
@@ -97,9 +98,11 @@ class AioPikaTqApiService(ABC):
                         block_counter += 1
                         logger.warning(f"TqSDK timeout ({block_counter}/{self.block_counter_max})")
                     else:
-                        logger.debug("TqSDK timeout outside trading hours")
+                        logger.info("TqSDK timeout, but outside trading hours, skip!")
                 else:
                     block_counter = 0
+
+                logger.info(f"TqSDK main wait_update finish, block_res:{block_res}, block_counter:{block_counter}")
 
                 if block_counter > self.block_counter_max:
                     raise Exception(f"Too many TqSDK timeouts, shutting down")
