@@ -40,7 +40,7 @@ CREATE TABLE order_history_futures_chn (
     qpto_trading_date VARCHAR(10) DEFAULT '',      -- Trading date (format: YYYY-MM-DD)
     exchange_trading_date VARCHAR(10) DEFAULT '',  -- Exchange trading date (format: YYYY-MM-DD)
     insert_date_time_str VARCHAR(30) DEFAULT '',   -- Insert time as string
-    orgin_timestamp BIGINT DEFAULT 0,              -- Timestamp from message (nanoseconds)
+    origin_timestamp BIGINT DEFAULT 0,             -- Timestamp from message (nanoseconds)
 
     -- System timestamps
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,

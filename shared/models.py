@@ -234,7 +234,7 @@ class OrderHistoryFuturesChn:
     qpto_trading_date: str = ""
     exchange_trading_date: str = ""
     insert_date_time_str: str = ""
-    orgin_timestamp: int = 0
+    origin_timestamp: int = 0
 
     # Trade records (for separate table processing)
     trade_records: Optional[Dict[str, Any]] = None
@@ -276,7 +276,7 @@ class OrderHistoryFuturesChn:
             qpto_trading_date=data.get('qpto_trading_date', ''),
             exchange_trading_date=data.get('exchange_trading_date', ''),
             insert_date_time_str=data.get('insert_date_time_str', ''),
-            orgin_timestamp=data.get('orgin_timestamp', 0),
+            origin_timestamp=data.get('origin_timestamp', 0),
             trade_records=data.get('trade_records')
         )
 
