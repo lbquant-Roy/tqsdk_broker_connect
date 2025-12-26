@@ -36,10 +36,8 @@ def process_order_submit(api: TqApi, redis_client: RedisClient, db_writer: Order
         # Execute all orders
         success = True
         for order in orders:
-            api.wait_update()
             if not execute_order(api, db_writer, config, order):
                 success = False
-            api.wait_update()
 
         return success
 
