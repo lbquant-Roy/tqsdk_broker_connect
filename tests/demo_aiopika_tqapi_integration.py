@@ -65,16 +65,6 @@ class AioPikaTqApiDemo:
         self.heartbeat_alive = False
         self.shutdown_event = asyncio.Event()
 
-    def setup_logging(self):
-        """Configure loguru logging"""
-        logger.remove()
-        logger.add(
-            sys.stdout,
-            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>demo</cyan> - <level>{message}</level>",
-            level="INFO",
-            colorize=True
-        )
-
     # === Worker Thread (Blocking) ===
 
     def tqapi_worker_loop(self):
@@ -124,10 +114,12 @@ class AioPikaTqApiDemo:
 
                 if not block_res:
                     if in_trading_time():
-                        logger.info(f"Block in trading time, block_counter + 1")
+                        logger.warning(f"Block in trading time, block_counter + 1")
                         block_counter += 1
                     else:
                         logger.info(f"Block not in trading time, skip")
+                else:
+                    block_counter = 0
 
                 if block_counter > block_counter_max:
                     raise Exception("Too many Block, Close and Restart!")
@@ -300,7 +292,6 @@ class AioPikaTqApiDemo:
 
     def run(self):
         """Main entry point"""
-        self.setup_logging()
 
         logger.info("=" * 60)
         logger.info("Starting AioPika-TqApi Integration Demo")
