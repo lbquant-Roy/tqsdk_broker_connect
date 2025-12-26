@@ -41,8 +41,7 @@ class OrderDbWriter:
                     price_type, volume_condition, time_condition, insert_date_time,
                     last_msg, status, is_dead, is_online, is_error, trade_price,
                     qpto_portfolio_id, qpto_contract_code, sender_type,
-                    qpto_product_id, qpto_exchange_id, qpto_order_tag,
-                    qpto_trading_date, exchange_trading_date, insert_date_time_str,
+                    qpto_order_tag, qpto_trading_date, exchange_trading_date,
                     origin_timestamp
                 ) VALUES (
                     :order_id, :exchange_order_id, :exchange_id, :instrument_id,
@@ -50,8 +49,7 @@ class OrderDbWriter:
                     :price_type, :volume_condition, :time_condition, :insert_date_time,
                     :last_msg, :status, :is_dead, :is_online, :is_error, :trade_price,
                     :qpto_portfolio_id, :qpto_contract_code, :sender_type,
-                    :qpto_product_id, :qpto_exchange_id, :qpto_order_tag,
-                    :qpto_trading_date, :exchange_trading_date, :insert_date_time_str,
+                    :qpto_order_tag, :qpto_trading_date, :exchange_trading_date,
                     :origin_timestamp
                 )
             """)

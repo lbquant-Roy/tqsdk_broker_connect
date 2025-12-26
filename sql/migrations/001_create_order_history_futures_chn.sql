@@ -34,12 +34,9 @@ CREATE TABLE order_history_futures_chn (
     qpto_portfolio_id VARCHAR(255) NOT NULL,       -- Required for filtering
     qpto_contract_code VARCHAR(50) DEFAULT '',     -- Input symbol (same as symbol from message)
     sender_type VARCHAR(100) DEFAULT '',           -- Service name (e.g., tq_submitter)
-    qpto_product_id VARCHAR(50) DEFAULT '',        -- Product ID from master data
-    qpto_exchange_id VARCHAR(50) DEFAULT '',       -- Exchange ID from master data
     qpto_order_tag VARCHAR(100) DEFAULT '',        -- Order tag
     qpto_trading_date VARCHAR(10) DEFAULT '',      -- Trading date (format: YYYY-MM-DD)
     exchange_trading_date VARCHAR(10) DEFAULT '',  -- Exchange trading date (format: YYYY-MM-DD)
-    insert_date_time_str VARCHAR(30) DEFAULT '',   -- Insert time as string
     origin_timestamp BIGINT DEFAULT 0,             -- Timestamp from message (nanoseconds)
 
     -- System timestamps

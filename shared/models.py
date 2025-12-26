@@ -228,12 +228,9 @@ class OrderHistoryFuturesChn:
     qpto_portfolio_id: str = ""
     qpto_contract_code: str = ""
     sender_type: str = ""
-    qpto_product_id: str = ""
-    qpto_exchange_id: str = ""
     qpto_order_tag: str = ""
     qpto_trading_date: str = ""
     exchange_trading_date: str = ""
-    insert_date_time_str: str = ""
     origin_timestamp: int = 0
 
     # Trade records (for separate table processing)
@@ -270,12 +267,9 @@ class OrderHistoryFuturesChn:
             qpto_portfolio_id=data.get('qpto_portfolio_id', ''),
             qpto_contract_code=data.get('qpto_contract_code', ''),
             sender_type=data.get('sender_type', ''),
-            qpto_product_id=data.get('qpto_product_id', ''),
-            qpto_exchange_id=data.get('qpto_exchange_id', ''),
             qpto_order_tag=data.get('qpto_order_tag', ''),
             qpto_trading_date=data.get('qpto_trading_date', ''),
             exchange_trading_date=data.get('exchange_trading_date', ''),
-            insert_date_time_str=data.get('insert_date_time_str', ''),
             origin_timestamp=data.get('origin_timestamp', 0),
             trade_records=data.get('trade_records')
         )

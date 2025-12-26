@@ -44,7 +44,6 @@ class OrderPostgresWriter:
                     is_error = :is_error,
                     trade_price = :trade_price,
                     exchange_trading_date = :exchange_trading_date,
-                    insert_date_time_str = :insert_date_time_str,
                     updated_at = NOW()
                 WHERE order_id = :order_id
             """)
@@ -60,8 +59,7 @@ class OrderPostgresWriter:
                 'is_online': order_data.is_online,
                 'is_error': order_data.is_error,
                 'trade_price': order_data.trade_price,
-                'exchange_trading_date': order_data.exchange_trading_date,
-                'insert_date_time_str': order_data.insert_date_time_str
+                'exchange_trading_date': order_data.exchange_trading_date
             })
 
             # Process trade_records if present
