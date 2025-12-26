@@ -15,7 +15,7 @@ CREATE TABLE order_history_futures_chn (
     exchange_id VARCHAR(50) DEFAULT '',            -- SHFE, DCE, CZCE, INE
     instrument_id VARCHAR(50) NOT NULL,            -- Contract code (e.g., ru2605)
     direction VARCHAR(10) NOT NULL,                -- BUY, SELL
-    offset VARCHAR(20) NOT NULL,                   -- OPEN, CLOSE, CLOSETODAY
+    order_offset VARCHAR(20) NOT NULL,             -- OPEN, CLOSE, CLOSETODAY
     volume_orign INTEGER NOT NULL,                 -- Total order volume
     volume_left INTEGER DEFAULT 0,                 -- Unfilled volume
     limit_price DECIMAL(20, 8) DEFAULT 0,          -- Limit price
@@ -73,7 +73,7 @@ CREATE TABLE trade_history_futures_chn (
     exchange_id VARCHAR(50) DEFAULT '',
     instrument_id VARCHAR(50) NOT NULL,
     direction VARCHAR(10) NOT NULL,         -- BUY, SELL
-    offset VARCHAR(20) NOT NULL,            -- OPEN, CLOSE, CLOSETODAY
+    order_offset VARCHAR(20) NOT NULL,      -- OPEN, CLOSE, CLOSETODAY
     price DECIMAL(20, 8) NOT NULL,          -- Fill price
     volume INTEGER NOT NULL,                -- Fill volume
     commission DECIMAL(20, 8) DEFAULT 0,    -- Commission for this trade

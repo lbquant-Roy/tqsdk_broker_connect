@@ -165,7 +165,7 @@ class TradeHistoryFuturesChn:
     exchange_id: str = ""
     instrument_id: str = ""
     direction: str = ""
-    offset: str = ""
+    order_offset: str = ""
     price: float = 0.0
     volume: int = 0
     commission: float = 0.0
@@ -187,7 +187,7 @@ class TradeHistoryFuturesChn:
             exchange_id=getattr(trade_data, 'exchange_id', ''),
             instrument_id=getattr(trade_data, 'instrument_id', ''),
             direction=getattr(trade_data, 'direction', ''),
-            offset=getattr(trade_data, 'offset', ''),
+            order_offset=getattr(trade_data, 'offset', ''),
             price=float(getattr(trade_data, 'price', 0)),
             volume=int(getattr(trade_data, 'volume', 0)),
             commission=float(getattr(trade_data, 'commission', 0)),
@@ -209,7 +209,7 @@ class OrderHistoryFuturesChn:
     exchange_id: str = ""
     instrument_id: str = ""
     direction: str = ""
-    offset: str = ""
+    order_offset: str = ""
     volume_orign: int = 0
     volume_left: int = 0
     limit_price: float = 0.0
@@ -250,7 +250,7 @@ class OrderHistoryFuturesChn:
             exchange_id=data.get('exchange_id', ''),
             instrument_id=data.get('instrument_id', ''),
             direction=data.get('direction', ''),
-            offset=data.get('offset', ''),
+            order_offset=data.get('order_offset', ''),
             volume_orign=data.get('volume_orign', 0),
             volume_left=data.get('volume_left', 0),
             limit_price=data.get('limit_price', 0.0),
@@ -283,7 +283,7 @@ class OrderHistoryFuturesChn:
             exchange_id=getattr(order, 'exchange_id', ''),
             instrument_id=getattr(order, 'instrument_id', ''),
             direction=getattr(order, 'direction', ''),
-            offset=getattr(order, 'offset', ''),
+            order_offset=getattr(order, 'offset', ''),
             volume_orign=int(getattr(order, 'volume_orign', 0)),
             volume_left=int(getattr(order, 'volume_left', 0)),
             limit_price=float(getattr(order, 'limit_price', 0)),

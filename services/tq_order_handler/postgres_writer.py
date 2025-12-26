@@ -98,7 +98,7 @@ class OrderPostgresWriter:
                     exchange_id=trade_data.get('exchange_id', ''),
                     instrument_id=trade_data.get('instrument_id', ''),
                     direction=trade_data.get('direction', ''),
-                    offset=trade_data.get('offset', ''),
+                    order_offset=trade_data.get('offset', ''),
                     price=float(trade_data.get('price', 0)),
                     volume=int(trade_data.get('volume', 0)),
                     commission=float(trade_data.get('commission', 0)),
@@ -111,11 +111,11 @@ class OrderPostgresWriter:
                 insert_sql = text("""
                     INSERT INTO trade_history_futures_chn (
                         trade_id, order_id, exchange_trade_id, exchange_id, instrument_id,
-                        direction, offset, price, volume, commission, trade_date_time,
+                        direction, order_offset, price, volume, commission, trade_date_time,
                         user_id, seqno, qpto_portfolio_id
                     ) VALUES (
                         :trade_id, :order_id, :exchange_trade_id, :exchange_id, :instrument_id,
-                        :direction, :offset, :price, :volume, :commission, :trade_date_time,
+                        :direction, :order_offset, :price, :volume, :commission, :trade_date_time,
                         :user_id, :seqno, :qpto_portfolio_id
                     )
                 """)

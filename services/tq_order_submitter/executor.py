@@ -86,7 +86,7 @@ def execute_order(api: TqApi, db_writer, config, order_request: Dict[str, Any]) 
             order_id=order_id,
             instrument_id=symbol,  # Will be updated by monitor with TqSDK's instrument_id
             direction=direction,
-            offset=offset,
+            order_offset=offset,
             volume_orign=volume,
             volume_left=volume,
             limit_price=limit_price if limit_price else 0.0,

@@ -37,7 +37,7 @@ class OrderDbWriter:
             insert_sql = text("""
                 INSERT INTO order_history_futures_chn (
                     order_id, exchange_order_id, exchange_id, instrument_id,
-                    direction, offset, volume_orign, volume_left, limit_price,
+                    direction, order_offset, volume_orign, volume_left, limit_price,
                     price_type, volume_condition, time_condition, insert_date_time,
                     last_msg, status, is_dead, is_online, is_error, trade_price,
                     qpto_portfolio_id, qpto_contract_code, sender_type,
@@ -45,7 +45,7 @@ class OrderDbWriter:
                     origin_timestamp
                 ) VALUES (
                     :order_id, :exchange_order_id, :exchange_id, :instrument_id,
-                    :direction, :offset, :volume_orign, :volume_left, :limit_price,
+                    :direction, :order_offset, :volume_orign, :volume_left, :limit_price,
                     :price_type, :volume_condition, :time_condition, :insert_date_time,
                     :last_msg, :status, :is_dead, :is_online, :is_error, :trade_price,
                     :qpto_portfolio_id, :qpto_contract_code, :sender_type,
