@@ -8,7 +8,7 @@ sys.path.insert(0, '/workspaces/tqsdk_broker_connect')
 from loguru import logger
 from tqsdk import TqApi
 
-from executor import cancel_order, cancel_orders_by_contract
+from executor import cancel_order, cancel_orders_by_contract, cancel_all
 
 
 def process_order_cancel(api: TqApi, message: dict) -> bool:
@@ -30,10 +30,8 @@ def process_order_cancel(api: TqApi, message: dict) -> bool:
             if not contract_code:
                 logger.error("Missing contract_code")
                 return False
-
             logger.info(f"Cancelling orders for contract: {contract_code}")
             return cancel_orders_by_contract(api, contract_code)
-
         elif cancel_type == 'order_id':
             order_id = message.get('order_id')
             if not order_id:
@@ -42,7 +40,9 @@ def process_order_cancel(api: TqApi, message: dict) -> bool:
 
             logger.info(f"Cancelling order: {order_id}")
             return cancel_order(api, order_id)
-
+        elif cancel_type == "all":
+            logger.info("Cancelling all alive orders")
+            return cancel_all(api, None)
         else:
             logger.error(f"Unknown cancel type: {cancel_type}")
             return False
