@@ -5,6 +5,7 @@ import argparse
 from datetime import datetime, timezone
 import uuid
 from typing import Any, Dict
+import time
 
 from loguru import logger
 
@@ -44,6 +45,7 @@ def submit_message(portfolio_id: str, order_id: str) -> Dict[str, Any]:
         "limit_price": 17355,
         "order_id": order_id,
         "portfolio_id": portfolio_id,
+        "timestamp": time.time_ns()
     }
 
 
