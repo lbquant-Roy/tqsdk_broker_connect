@@ -175,6 +175,8 @@ class OrderExecutor:
                     success = self.cancel_orders_by_contract(order_request.get('contract_code', ''))
                 elif cancel_type == 'order_id':
                     success = self.cancel_order(order_request.get('order_id'))
+                elif cancel_type == 'all':
+                    success = self.cancel_all_orders()
                 else:
                     logger.error(f"Unknown cancel type: {cancel_type}")
                     success = False
@@ -469,6 +471,49 @@ class OrderExecutor:
 
         except Exception as e:
             logger.error(f"Failed to queue cancel orders for contract {contract_code}: {e}")
+            return False
+
+    def cancel_all_orders(self) -> bool:
+        """
+        Queue cancellation requests for all alive orders.
+
+        Returns
+        -------
+        bool
+            True if all cancel requests were queued successfully
+        """
+        try:
+            api = self.stream_handler.get_api()
+            if not api:
+                logger.error("TqApi not available")
+                return False
+
+            orders = api.get_order()
+            alive_orders = [
+                order for order in orders.values()
+                if order.status == "ALIVE"
+            ]
+
+            if not alive_orders:
+                logger.info("No alive orders to cancel")
+                return True
+
+            logger.info(f"Found {len(alive_orders)} alive orders to cancel")
+
+            all_queued = True
+            for order in alive_orders:
+                if not self.stream_handler.queue_cancel_order(order.order_id):
+                    all_queued = False
+
+            if all_queued:
+                logger.info(f"Queued {len(alive_orders)} cancel requests for all orders")
+            else:
+                logger.error("Failed to queue some cancel requests")
+
+            return all_queued
+
+        except Exception as e:
+            logger.error(f"Failed to queue cancel all orders: {e}")
             return False
 
     def stop(self):
