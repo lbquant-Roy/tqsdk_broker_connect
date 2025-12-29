@@ -277,6 +277,27 @@ class OrderHistoryFuturesChn:
     @classmethod
     def from_tqsdk_order(cls, order: Any, portfolio_id: str) -> 'OrderHistoryFuturesChn':
         """Create from TqSDK order object"""
+        # Serialize trade_records to be JSON-safe
+        trade_records_raw = getattr(order, 'trade_records', None)
+        trade_records_serializable = None
+        if trade_records_raw:
+            try:
+                # Convert trade_records to a serializable dict
+                trade_records_serializable = {}
+                for trade_id, trade_data in trade_records_raw.items():
+                    # Extract only serializable fields from trade data
+                    if hasattr(trade_data, '__dict__'):
+                        # If it's an object, convert to dict with only basic types
+                        trade_records_serializable[trade_id] = {
+                            k: v for k, v in trade_data.__dict__.items()
+                            if isinstance(v, (str, int, float, bool, type(None)))
+                        }
+                    elif isinstance(trade_data, dict):
+                        trade_records_serializable[trade_id] = trade_data
+            except Exception:
+                # If serialization fails, skip trade_records
+                trade_records_serializable = None
+
         return cls(
             order_id=getattr(order, 'order_id', ''),
             exchange_order_id=getattr(order, 'exchange_order_id', ''),
@@ -293,12 +314,12 @@ class OrderHistoryFuturesChn:
             insert_date_time=int(getattr(order, 'insert_date_time', 0)),
             last_msg=getattr(order, 'last_msg', ''),
             status=getattr(order, 'status', ''),
-            is_dead=bool(getattr(order, 'is_dead', False)) if getattr(order, 'is_dead', None) is not None else False,
-            is_online=bool(getattr(order, 'is_online', False)) if getattr(order, 'is_online', None) is not None else False,
-            is_error=bool(getattr(order, 'is_error', False)) if getattr(order, 'is_error', None) is not None else False,
+            is_dead=bool(getattr(order, 'is_dead', False)),
+            is_online=bool(getattr(order, 'is_online', False)),
+            is_error=bool(getattr(order, 'is_error', False)),
             trade_price=float(getattr(order, 'trade_price', 0)),
             qpto_portfolio_id=portfolio_id,
-            trade_records=getattr(order, 'trade_records', None)
+            trade_records=trade_records_serializable
         )
 
 

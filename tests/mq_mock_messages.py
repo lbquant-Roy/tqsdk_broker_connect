@@ -42,7 +42,7 @@ def submit_message(portfolio_id: str, order_id: str) -> Dict[str, Any]:
         "direction": "SELL",
         "offset": "OPEN",
         "volume": 2,
-        "limit_price": 17355,
+        "limit_price": 17650,
         "order_id": order_id,
         "portfolio_id": portfolio_id,
         "timestamp": time.time_ns()

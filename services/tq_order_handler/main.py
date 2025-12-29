@@ -52,6 +52,9 @@ class OrderHandlerService:
 
     def process_update(self, message: dict) -> bool:
         """Process an order update"""
+
+        # TODO: add update valid check
+
         try:
             logger.info(f"Processing order update: {message.get('order_id')}")
             return self.writer.write_order_update(message)
