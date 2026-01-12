@@ -46,3 +46,6 @@ htmlcov/
 *.tmp
 *.bak
 docker-compose.override.yml
+
+# Local Data Folder
+/data
