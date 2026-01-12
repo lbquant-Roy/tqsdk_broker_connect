@@ -59,9 +59,10 @@ def check_order_age(order_request):
     return True
 
 
-def execute_order(api: TqApi, order_request: Dict[str, Any]) -> bool:
-    """Execute order via TqApi after validation checks."""
+def execute_order(api: TqApi, db_writer, config, order_request: Dict[str, Any]) -> bool:
+    """Execute order via TqApi after validation checks and DB insert."""
     try:
+        # check first
         if not check_order_age(order_request):
             return False
 
@@ -72,12 +73,45 @@ def execute_order(api: TqApi, order_request: Dict[str, Any]) -> bool:
         direction = order_request['direction']
         offset = order_request['offset']
         volume = order_request['volume']
-        limit_price = order_request.get('limit_price')
+        limit_price = order_request.get('limit_price', 0.0)
         order_id = order_request.get('order_id')
+        portfolio_id = order_request.get('portfolio_id', config.portfolio_id)
+        timestamp = order_request['timestamp']
 
-        price_str = f"{limit_price}" if limit_price else "MARKET"
-        logger.info(f"Submitting order: {symbol} {direction} {offset} {volume} @ {price_str}")
+        _print_price_str = f"{limit_price}" if limit_price else "MARKET"
+        logger.info(f"Submitting order: {symbol} {direction} {offset} {volume} @ {_print_price_str}")
 
+        # Prepare order data for DB insertion
+        from shared.models import OrderHistoryFuturesChn
+        order_data = OrderHistoryFuturesChn(
+            order_id=order_id,
+            instrument_id=symbol,  # Will be updated by monitor with TqSDK's instrument_id
+            direction=direction,
+            order_offset=offset,
+            volume_orign=volume,
+            volume_left=volume,
+            limit_price=limit_price if limit_price else 0.0,
+            qpto_portfolio_id=portfolio_id,
+            qpto_contract_code=symbol,
+            sender_type='tq_submitter',
+            origin_timestamp=timestamp
+        )
+
+        # Insert to database BEFORE second validation
+        if not db_writer.insert_order(order_data):
+            logger.error(f"DB insert failed for order {order_id}, aborting submission")
+            return False
+        else:
+            logger.info(f"DB insert success for order {order_id}")
+
+        # before send, check again
+        if not check_order_age(order_request):
+            return False
+
+        if not is_in_trading_session(order_request.get('order_id')):
+            return False
+
+        # Prepare TqSDK order params
         order_params = {
             'symbol': symbol,
             'direction': direction,
@@ -89,17 +123,11 @@ def execute_order(api: TqApi, order_request: Dict[str, Any]) -> bool:
         if limit_price:
             order_params['limit_price'] = limit_price
 
-        # before send, check again
-        if not check_order_age(order_request):
-            return False
-
-        if not is_in_trading_session(order_request.get('order_id')):
-            return False
-
         api.wait_update()
         api.insert_order(**order_params)
         api.wait_update()
 
+        logger.info(f"Order {order_id} submitted successfully")
         return True
 
     except Exception as e:

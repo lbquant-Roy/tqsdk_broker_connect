@@ -13,7 +13,7 @@ ACR_IMAGE_NAME="tqsdk_broker_connect"
 
 # Docker Image Configuration
 # Unified image for all 8 services (command override in docker-compose)
-IMAGE_TAG="v0.3.3"
+IMAGE_TAG="v0.3.5"
 
 # Build Configuration
 BUILD_CONTEXT="../.."

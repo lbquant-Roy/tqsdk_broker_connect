@@ -3,7 +3,7 @@ version: "3.7"
 # Unified image configuration
 # All services use the same image but with different command overrides
 x-common-image: &common-image
-  image: ${REGISTRY:-}tqsdk_broker_connect:${VERSION:-v0.3.3}
+  image: ${REGISTRY:-}tqsdk_broker_connect:${VERSION:-v0.3.5}
   restart: unless-stopped
   network_mode: "host"
 

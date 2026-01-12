@@ -3,7 +3,9 @@
 TqSDK Data Capture Script
 
 Captures all TqSDK response data types (account, positions, orders, trades, quotes, klines)
-and saves each to separate JSON files for demo data review.
+and saves each to separate JSON files in a timestamped directory (UTC+8).
+
+Output directory format: /workspaces/tqsdk_broker_connect/demo_data/YYYYMMDDHHMM
 
 Usage:
     cd /workspaces/tqsdk_broker_connect
@@ -14,7 +16,7 @@ import sys
 sys.path.insert(0, '/workspaces/tqsdk_broker_connect')
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -32,7 +34,10 @@ DEMO_SYMBOLS = ["SHFE.rb2505", "DCE.m2505", "SHFE.au2505"]
 KLINE_DURATIONS = [60, 300, 3600, 86400]
 KLINE_DATA_LENGTH = 100
 UPDATE_ITERATIONS = 30
-OUTPUT_DIR = Path("/workspaces/tqsdk_broker_connect/demo_data")
+BASE_OUTPUT_DIR = Path("/workspaces/tqsdk_broker_connect/data/tqsdk_api_snapshot")
+
+# UTC+8 timezone
+UTC8 = timezone(timedelta(hours=8))
 
 
 class TqSDKEncoder(json.JSONEncoder):
@@ -224,10 +229,11 @@ def save_json(data: Any, filepath: Path, pretty: bool = True):
         logger.error(f"Error saving {filepath}: {e}")
 
 
-def create_metadata(config, symbols: List[str], durations: List[int]) -> Dict[str, Any]:
+def create_metadata(config, symbols: List[str], durations: List[int], capture_time: datetime) -> Dict[str, Any]:
     """Create metadata about the capture"""
     return {
-        "capture_timestamp": datetime.now().isoformat(),
+        "capture_timestamp": capture_time.isoformat(),
+        "capture_timestamp_utc8": capture_time.astimezone(UTC8).strftime("%Y%m%d%H%M"),
         "tq_username": config.tq_username,
         "portfolio_id": config.portfolio_id,
         "run_mode": config.run_mode,
@@ -246,7 +252,16 @@ def main():
     logger.info("=" * 60)
 
     config = get_config()
-    OUTPUT_DIR.mkdir(exist_ok=True)
+
+    # Create timestamped output directory using UTC+8
+    capture_time = datetime.now(UTC8)
+    timestamp_str = capture_time.strftime("%Y%m%d%H%M")
+    output_dir = BASE_OUTPUT_DIR / timestamp_str
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    logger.info(f"Output directory: {output_dir}")
+    logger.info(f"Capture time (UTC+8): {timestamp_str}")
+
     api = None
 
     try:
@@ -290,18 +305,18 @@ def main():
         logger.info("-" * 60)
         logger.info("Saving data to files...")
 
-        save_json(account_data, OUTPUT_DIR / "account.json")
-        save_json(positions_data, OUTPUT_DIR / "positions.json")
-        save_json(orders_data, OUTPUT_DIR / "orders.json")
-        save_json(trades_data, OUTPUT_DIR / "trades.json")
-        save_json(quotes_data, OUTPUT_DIR / "quotes.json")
-        save_json(klines_data, OUTPUT_DIR / "klines.json")
+        save_json(account_data, output_dir / "account.json")
+        save_json(positions_data, output_dir / "positions.json")
+        save_json(orders_data, output_dir / "orders.json")
+        save_json(trades_data, output_dir / "trades.json")
+        save_json(quotes_data, output_dir / "quotes.json")
+        save_json(klines_data, output_dir / "klines.json")
 
-        metadata = create_metadata(config, DEMO_SYMBOLS, KLINE_DURATIONS)
-        save_json(metadata, OUTPUT_DIR / "capture_metadata.json")
+        metadata = create_metadata(config, DEMO_SYMBOLS, KLINE_DURATIONS, capture_time)
+        save_json(metadata, output_dir / "capture_metadata.json")
 
         logger.info("=" * 60)
-        logger.info(f"Data capture complete! Files saved to {OUTPUT_DIR}")
+        logger.info(f"Data capture complete! Files saved to {output_dir}")
         logger.info("=" * 60)
 
     except Exception as e:

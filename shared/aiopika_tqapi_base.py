@@ -107,19 +107,18 @@ class AioPikaTqApiService(ABC):
                 if block_counter > self.block_counter_max:
                     raise Exception(f"Too many TqSDK timeouts, shutting down")
 
-                try:
-                    message = self.message_queue.get_nowait()
-                    logger.info("Processing message from queue")
-
+                while not self.message_queue.empty():
                     try:
-                        success = self.process_message_in_worker(message)
-                        if not success:
-                            logger.warning("Message processing failed")
-                    except Exception as e:
-                        logger.error(f"Error processing message: {e}", exc_info=True)
-
-                except queue.Empty:
-                    pass
+                        message = self.message_queue.get_nowait()
+                        logger.info("Processing message from queue")
+                        try:
+                            success = self.process_message_in_worker(message)
+                            if not success:
+                                logger.warning("Message processing failed")
+                        except Exception as e:
+                            logger.error(f"Error processing message: {e}", exc_info=True)
+                    except queue.Empty:
+                        pass
 
         except Exception as e:
             logger.error(f"Fatal worker error: {e}", exc_info=True)

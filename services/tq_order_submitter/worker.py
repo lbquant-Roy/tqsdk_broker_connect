@@ -12,9 +12,10 @@ from shared.redis_client import RedisClient
 from shared.config import Config
 from closetoday_splitter import split_close_order
 from executor import execute_order
+from order_db_writer import OrderDbWriter
 
 
-def process_order_submit(api: TqApi, redis_client: RedisClient,
+def process_order_submit(api: TqApi, redis_client: RedisClient, db_writer: OrderDbWriter,
                         config: Config, message: dict) -> bool:
     """
     Process order submit request with validations.
@@ -35,10 +36,8 @@ def process_order_submit(api: TqApi, redis_client: RedisClient,
         # Execute all orders
         success = True
         for order in orders:
-            api.wait_update()
-            if not execute_order(api, order):
+            if not execute_order(api, db_writer, config, order):
                 success = False
-            api.wait_update()
 
         return success
 

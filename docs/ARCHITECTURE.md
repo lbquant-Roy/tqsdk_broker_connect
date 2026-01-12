@@ -278,38 +278,78 @@ The system uses an 8-container architecture to eliminate thread-safety issues an
 
 ## PostgreSQL Schema
 
-### order_history
+### order_history_futures_chn
+
+Main order tracking table aligned with tqsdk.objs.Order schema:
 
 ```sql
-CREATE TABLE order_history (
-    id VARCHAR PRIMARY KEY,           -- order_id
-    exchange_order_id VARCHAR,
-    portfolio_id VARCHAR NOT NULL,
-    symbol VARCHAR NOT NULL,
-    direction VARCHAR NOT NULL,
-    offset VARCHAR NOT NULL,
-    status VARCHAR NOT NULL,
-    volume_orign INTEGER,
-    volume_left INTEGER,
-    filled_quantity INTEGER,
-    limit_price DECIMAL,
-    trade_price DECIMAL,
-    insert_date_time BIGINT,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
+CREATE TABLE order_history_futures_chn (
+    -- Primary key
+    order_id VARCHAR(255) PRIMARY KEY,
+
+    -- TqSDK core fields
+    exchange_order_id VARCHAR(255) DEFAULT '',
+    exchange_id VARCHAR(50) DEFAULT '',            -- SHFE, DCE, CZCE, INE
+    instrument_id VARCHAR(50) NOT NULL,            -- Contract code (e.g., ru2605)
+    direction VARCHAR(10) NOT NULL,                -- BUY, SELL
+    offset VARCHAR(20) NOT NULL,                   -- OPEN, CLOSE, CLOSETODAY
+    volume_orign INTEGER NOT NULL,                 -- Total order volume
+    volume_left INTEGER DEFAULT 0,                 -- Unfilled volume
+    limit_price DECIMAL(20, 8) DEFAULT 0,          -- Limit price
+    price_type VARCHAR(20) DEFAULT '',             -- ANY (market), LIMIT
+    volume_condition VARCHAR(20) DEFAULT '',       -- ANY, MIN, ALL
+    time_condition VARCHAR(20) DEFAULT '',         -- IOC, GFS, GFD, GTC, GFA
+    insert_date_time BIGINT DEFAULT 0,             -- Order submission time (nanoseconds)
+    last_msg TEXT DEFAULT '',                      -- Status message
+    status VARCHAR(20) DEFAULT '',                 -- ALIVE, FINISHED
+    is_dead BOOLEAN DEFAULT FALSE,                 -- Order cannot produce more fills
+    is_online BOOLEAN DEFAULT FALSE,               -- Order confirmed at exchange
+    is_error BOOLEAN DEFAULT FALSE,                -- Order failed
+    trade_price DECIMAL(20, 8) DEFAULT 0,          -- Average fill price
+
+    -- QPTO Application fields
+    qpto_portfolio_id VARCHAR(255) NOT NULL,       -- Required for filtering
+    qpto_contract_code VARCHAR(50) DEFAULT '',     -- Input symbol
+    sender_type VARCHAR(100) DEFAULT '',           -- Service name (e.g., tq_submitter)
+    qpto_order_tag VARCHAR(100) DEFAULT '',        -- Order tag
+    qpto_trading_date VARCHAR(10) DEFAULT '',      -- Trading date (YYYY-MM-DD)
+    exchange_trading_date VARCHAR(10) DEFAULT '',  -- Exchange trading date (YYYY-MM-DD)
+    origin_timestamp BIGINT DEFAULT 0,             -- Timestamp from message (nanoseconds)
+
+    -- System timestamps
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-### order_event
+### trade_history_futures_chn
+
+Individual trade records table:
 
 ```sql
-CREATE TABLE order_event (
-    id SERIAL PRIMARY KEY,
-    order_id VARCHAR NOT NULL,
-    portfolio_id VARCHAR NOT NULL,
-    status VARCHAR NOT NULL,          -- event_type
-    msg JSONB,                        -- full order data
-    created_at TIMESTAMP DEFAULT NOW()
+CREATE TABLE trade_history_futures_chn (
+    -- Primary key
+    trade_id VARCHAR(255) PRIMARY KEY,
+
+    -- Reference to order
+    order_id VARCHAR(255) NOT NULL,
+
+    -- TqSDK trade record fields
+    exchange_trade_id VARCHAR(255) DEFAULT '',
+    exchange_id VARCHAR(50) DEFAULT '',
+    instrument_id VARCHAR(50) NOT NULL,
+    direction VARCHAR(10) NOT NULL,         -- BUY, SELL
+    offset VARCHAR(20) NOT NULL,            -- OPEN, CLOSE, CLOSETODAY
+    price DECIMAL(20, 8) NOT NULL,          -- Fill price
+    volume INTEGER NOT NULL,                -- Fill volume
+    commission DECIMAL(20, 8) DEFAULT 0,    -- Commission for this trade
+    trade_date_time BIGINT DEFAULT 0,       -- Trade execution time (nanoseconds)
+    user_id VARCHAR(255) DEFAULT '',
+    seqno INTEGER DEFAULT 0,
+
+    -- Application fields
+    qpto_portfolio_id VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 ```
 

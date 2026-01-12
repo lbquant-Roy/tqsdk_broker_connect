@@ -157,21 +157,84 @@ class PositionUpdate:
 
 
 @dataclass
-class OrderUpdate:
-    """Order update message for internal queue"""
-    type: str = "ORDER_UPDATE"
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
-    portfolio_id: str = ""
+class TradeHistoryFuturesChn:
+    """Trade record model - aligned with trade_history_futures_chn table"""
+    trade_id: str = ""
     order_id: str = ""
-    status: str = ""
-    event_type: str = ""
-    filled_quantity: float = 0
-    symbol: str = ""
+    exchange_trade_id: str = ""
+    exchange_id: str = ""
+    instrument_id: str = ""
     direction: str = ""
-    offset: str = ""
+    order_offset: str = ""
+    price: float = 0.0
+    volume: int = 0
+    commission: float = 0.0
+    trade_date_time: int = 0
+    user_id: str = ""
+    seqno: int = 0
+    qpto_portfolio_id: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_tqsdk_trade(cls, trade_id: str, trade_data: Any, order_id: str, portfolio_id: str) -> 'TradeHistoryFuturesChn':
+        """Create from TqSDK trade record"""
+        return cls(
+            trade_id=trade_id,
+            order_id=order_id,
+            exchange_trade_id=getattr(trade_data, 'exchange_trade_id', ''),
+            exchange_id=getattr(trade_data, 'exchange_id', ''),
+            instrument_id=getattr(trade_data, 'instrument_id', ''),
+            direction=getattr(trade_data, 'direction', ''),
+            order_offset=getattr(trade_data, 'offset', ''),
+            price=float(getattr(trade_data, 'price', 0)),
+            volume=int(getattr(trade_data, 'volume', 0)),
+            commission=float(getattr(trade_data, 'commission', 0)),
+            trade_date_time=int(getattr(trade_data, 'trade_date_time', 0)),
+            user_id=getattr(trade_data, 'user_id', ''),
+            seqno=int(getattr(trade_data, 'seqno', 0)),
+            qpto_portfolio_id=portfolio_id
+        )
+
+
+@dataclass
+class OrderHistoryFuturesChn:
+    """Order model - aligned with order_history_futures_chn table"""
+    # Primary key
+    order_id: str = ""
+
+    # TqSDK core fields
+    exchange_order_id: str = ""
+    exchange_id: str = ""
+    instrument_id: str = ""
+    direction: str = ""
+    order_offset: str = ""
     volume_orign: int = 0
     volume_left: int = 0
-    limit_price: Optional[float] = None
+    limit_price: float = 0.0
+    price_type: str = ""
+    volume_condition: str = ""
+    time_condition: str = ""
+    insert_date_time: int = 0
+    last_msg: str = ""
+    status: str = ""
+    is_dead: bool = False
+    is_online: bool = False
+    is_error: bool = False
+    trade_price: float = 0.0
+
+    # QPTO Application fields
+    qpto_portfolio_id: str = ""
+    qpto_contract_code: str = ""
+    sender_type: str = ""
+    qpto_order_tag: str = ""
+    qpto_trading_date: str = ""
+    exchange_trading_date: str = ""
+    origin_timestamp: int = 0
+
+    # Trade records (for separate table processing)
+    trade_records: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -180,21 +243,83 @@ class OrderUpdate:
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'OrderUpdate':
+    def from_dict(cls, data: Dict[str, Any]) -> 'OrderHistoryFuturesChn':
         return cls(
-            type=data.get('type', 'ORDER_UPDATE'),
-            timestamp=data.get('timestamp', datetime.utcnow().isoformat()),
-            portfolio_id=data.get('portfolio_id', ''),
             order_id=data.get('order_id', ''),
-            status=data.get('status', ''),
-            event_type=data.get('event_type', ''),
-            filled_quantity=data.get('filled_quantity', 0),
-            symbol=data.get('symbol', ''),
+            exchange_order_id=data.get('exchange_order_id', ''),
+            exchange_id=data.get('exchange_id', ''),
+            instrument_id=data.get('instrument_id', ''),
             direction=data.get('direction', ''),
-            offset=data.get('offset', ''),
+            order_offset=data.get('order_offset', ''),
             volume_orign=data.get('volume_orign', 0),
             volume_left=data.get('volume_left', 0),
-            limit_price=data.get('limit_price')
+            limit_price=data.get('limit_price', 0.0),
+            price_type=data.get('price_type', ''),
+            volume_condition=data.get('volume_condition', ''),
+            time_condition=data.get('time_condition', ''),
+            insert_date_time=data.get('insert_date_time', 0),
+            last_msg=data.get('last_msg', ''),
+            status=data.get('status', ''),
+            is_dead=data.get('is_dead', False),
+            is_online=data.get('is_online', False),
+            is_error=data.get('is_error', False),
+            trade_price=data.get('trade_price', 0.0),
+            qpto_portfolio_id=data.get('qpto_portfolio_id', ''),
+            qpto_contract_code=data.get('qpto_contract_code', ''),
+            sender_type=data.get('sender_type', ''),
+            qpto_order_tag=data.get('qpto_order_tag', ''),
+            qpto_trading_date=data.get('qpto_trading_date', ''),
+            exchange_trading_date=data.get('exchange_trading_date', ''),
+            origin_timestamp=data.get('origin_timestamp', 0),
+            trade_records=data.get('trade_records')
+        )
+
+    @classmethod
+    def from_tqsdk_order(cls, order: Any, portfolio_id: str) -> 'OrderHistoryFuturesChn':
+        """Create from TqSDK order object"""
+        # Serialize trade_records to be JSON-safe
+        trade_records_raw = getattr(order, 'trade_records', None)
+        trade_records_serializable = None
+        if trade_records_raw:
+            try:
+                # Convert trade_records to a serializable dict
+                trade_records_serializable = {}
+                for trade_id, trade_data in trade_records_raw.items():
+                    # Extract only serializable fields from trade data
+                    if hasattr(trade_data, '__dict__'):
+                        # If it's an object, convert to dict with only basic types
+                        trade_records_serializable[trade_id] = {
+                            k: v for k, v in trade_data.__dict__.items()
+                            if isinstance(v, (str, int, float, bool, type(None)))
+                        }
+                    elif isinstance(trade_data, dict):
+                        trade_records_serializable[trade_id] = trade_data
+            except Exception:
+                # If serialization fails, skip trade_records
+                trade_records_serializable = None
+
+        return cls(
+            order_id=getattr(order, 'order_id', ''),
+            exchange_order_id=getattr(order, 'exchange_order_id', ''),
+            exchange_id=getattr(order, 'exchange_id', ''),
+            instrument_id=getattr(order, 'instrument_id', ''),
+            direction=getattr(order, 'direction', ''),
+            order_offset=getattr(order, 'offset', ''),
+            volume_orign=int(getattr(order, 'volume_orign', 0)),
+            volume_left=int(getattr(order, 'volume_left', 0)),
+            limit_price=float(getattr(order, 'limit_price', 0)),
+            price_type=getattr(order, 'price_type', ''),
+            volume_condition=getattr(order, 'volume_condition', ''),
+            time_condition=getattr(order, 'time_condition', ''),
+            insert_date_time=int(getattr(order, 'insert_date_time', 0)),
+            last_msg=getattr(order, 'last_msg', ''),
+            status=getattr(order, 'status', ''),
+            is_dead=bool(getattr(order, 'is_dead', False)),
+            is_online=bool(getattr(order, 'is_online', False)),
+            is_error=bool(getattr(order, 'is_error', False)),
+            trade_price=float(getattr(order, 'trade_price', 0)),
+            qpto_portfolio_id=portfolio_id,
+            trade_records=trade_records_serializable
         )
 
 
